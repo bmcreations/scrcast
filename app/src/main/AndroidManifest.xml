@@ -10,7 +10,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.App">
         <activity
-            android:name="dev.bmcreations.scrcast.app.MainActivity"
+            android:name="dev.bmcreations.scrcast.app.list.MainActivity"
             android:label="@string/app_name"
             android:theme="@style/Theme.App.NoActionBar">
             <intent-filter>

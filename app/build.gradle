@@ -40,4 +40,6 @@ dependencies {
     implementation deps.jetpack.corektx
     implementation deps.jetpack.appcompat
     implementation deps.jetpack.material
+
+    implementation deps.watchservice_ktx
 }
