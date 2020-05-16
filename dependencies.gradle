@@ -12,7 +12,7 @@ ext.deps = [:]
 def deps = [:]
 
 def versions = [:]
-versions.plugin_android_maven = "1.3"
+versions.plugin_android_maven = "2.1"
 versions.plugin_build_tools = '4.1.0-alpha09'
 versions.plugin_google_services = "4.3.0"
 versions.plugin_fabric = '1.+'

@@ -15,6 +15,7 @@ class MainActivity : AppCompatActivity() {
 
     private val recorder: ScrCast by lazy {
         ScrCast.use(this).apply {
+            updateOptions { copy(directory = "scrcast-sample") }
             setOnStateChangeListener { recording ->
                 fab.reflectState(recording)
             }
