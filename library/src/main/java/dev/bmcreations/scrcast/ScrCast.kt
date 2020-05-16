@@ -2,7 +2,10 @@ package dev.bmcreations.scrcast
 
 import android.Manifest
 import android.app.Activity
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.media.MediaRecorder
 import android.media.MediaRecorder.AudioEncoder.AAC
 import android.media.MediaRecorder.AudioEncoder.AMR_NB
@@ -14,6 +17,7 @@ import android.os.Environment
 import android.os.Parcelable
 import android.util.DisplayMetrics
 import android.util.Log
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.karumi.dexter.Dexter
 import com.karumi.dexter.MultiplePermissionsReport
 import com.karumi.dexter.PermissionToken
@@ -38,15 +42,44 @@ data class Options(
     val outputFormat: Int = MediaRecorder.OutputFormat.MPEG_4
 ): Parcelable
 
+interface OnRecordingStateChange {
+    fun onStateChange(recording: Boolean)
+}
+
+internal typealias RecordingStateChangeCallback = (Boolean) -> Unit
+
 /**
  * Main Interface for accessing [scrcast] Library
  */
 class ScrCast private constructor(val activity: Activity) {
 
     var isRecording = false
-        private set
+        private set(value) {
+            field = value
+            onStateChange?.invoke(value)
+            if (!value) {
+                try {
+                    broadcaster.unregisterReceiver(recordingStateHandler)
+                } catch (swallow: Exception) { }
+            }
+        }
+
+    private var onStateChange: RecordingStateChangeCallback? = null
 
     private var options = Options()
+
+    private val broadcaster = LocalBroadcastManager.getInstance(activity)
+
+    private val recordingStateHandler = object : BroadcastReceiver() {
+        override fun onReceive(p0: Context?, p1: Intent?) {
+            p1?.action?.let { action ->
+                when(action) {
+                    RecordingStateChange.Recording.name -> isRecording = true
+                    RecordingStateChange.IdleOrFinished.name -> isRecording = false
+                }
+            }
+        }
+    }
 
     private val dpi by lazy {
         DisplayMetrics().apply { activity.windowManager.defaultDisplay.getMetrics(this) }.density
@@ -54,31 +87,35 @@ class ScrCast private constructor(val activity: Activity) {
 
     private var _outputFile: File? = null
 
+    val outputDirectory: File?
+        get() {
+            val mediaStorageDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES),options.directory)
+            mediaStorageDir.apply {
+                if (!exists()) {
+                    if (!mkdirs()) {
+                        Log.d("scrcast", "failed to created output directory")
+                        return null
+                    }
+                }
+            }
+
+            return mediaStorageDir
+        }
+
     private val outputFile: File?
         get() {
             if (_outputFile == null) {
-                val mediaStorageDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES),options.directory)
-                mediaStorageDir.apply {
-                    if (!exists()) {
-                        if (!mkdirs()) {
-                            Log.d("scrcast", "failed to created output directory")
-                            return null
-                        }
-                    }
-
+                outputDirectory?.let { dir ->
                     val timestamp = SimpleDateFormat(
                         "MM_dd_yyyy_hhmmss",
                         Locale.getDefault()
                     ).format(Date())
-                    _outputFile = File("${mediaStorageDir.path}${File.separator}$timestamp.mp4")
-                }
+                    _outputFile = File("${dir.path}${File.separator}$timestamp.mp4")
+                } ?: return null
             }
             return _outputFile
         }
 
-    fun updateOptions(block: Options.() -> Options) {
-        options = block(options)
-    }
 
     private val projectionManager: MediaProjectionManager by lazy {
         activity.getSystemService(MediaProjectionManager::class.java)
@@ -97,6 +134,41 @@ class ScrCast private constructor(val activity: Activity) {
         }
     }
 
+    private fun startRecording() {
+        MediaProjectionRequest(activity, projectionManager).start(object : MediaProjectionResult {
+            override fun onCancel() = Unit
+            override fun onFailure(error: Throwable) = Unit
+
+            override fun onSuccess(result: ActivityResult?) {
+                if (result != null) {
+                   // activity.moveTaskToBack(true)
+                    val output = outputFile
+                    if (output != null) {
+                        startService(result, output)
+                    }
+                }
+            }
+        })
+    }
+
+    fun updateOptions(block: Options.() -> Options) {
+        options = block(options)
+    }
+
+    @JvmSynthetic
+    fun updateOptions(options: Options) {
+        this.options = options
+    }
+
+    fun setOnStateChangeListener(listener : OnRecordingStateChange) {
+        onStateChange = { listener.onStateChange(it) }
+    }
+
+    @JvmSynthetic
+    fun setOnStateChangeListener(callback: (Boolean) -> Unit) {
+        onStateChange = callback
+    }
+
     fun record() {
         if (!isRecording) {
             Dexter.withContext(activity)
@@ -106,23 +178,6 @@ class ScrCast private constructor(val activity: Activity) {
         } else {
             stopRecording()
         }
-    }
-
-    private fun startRecording() {
-        MediaProjectionRequest(activity, projectionManager).start(object : MediaProjectionResult {
-            override fun onCancel() = Unit
-            override fun onFailure(error: Throwable) = Unit
-
-            override fun onSuccess(result: ActivityResult?) {
-                if (result != null) {
-                    activity.moveTaskToBack(true)
-                    val output = outputFile
-                    if (output != null) {
-                        startService(result, output)
-                    }
-                }
-            }
-        })
     }
 
     fun stopRecording() {
@@ -145,6 +200,14 @@ class ScrCast private constructor(val activity: Activity) {
             putExtra("dpi", dpi)
             putExtra("rotation", activity.windowManager.defaultDisplay.rotation)
         }
+
+        broadcaster.registerReceiver(
+            recordingStateHandler,
+            IntentFilter().apply {
+                addAction(RecordingStateChange.IdleOrFinished.name)
+                addAction(RecordingStateChange.Recording.name)
+            }
+        )
 
         activity.startService(service)
     }

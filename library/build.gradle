@@ -38,7 +38,8 @@ dependencies {
     implementation deps.activity_results_dispatcher
     implementation deps.dexter
     implementation deps.jetpack.appcompat
+    implementation deps.jetpack.localbroadcast
 
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.2-1.3.60"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.2-1.3.60"
+    api deps.kotlin.coroutinesCore
+    api deps.kotlin.coroutinesAndroid
 }

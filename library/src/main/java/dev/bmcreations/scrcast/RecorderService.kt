@@ -11,6 +11,7 @@ import android.media.projection.MediaProjectionManager
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 
 
 class RecorderService : Service() {
@@ -18,6 +19,8 @@ class RecorderService : Service() {
     private val projectionManager: MediaProjectionManager by lazy {
         getSystemService(MediaProjectionManager::class.java)
     }
+
+    private val broadcaster = LocalBroadcastManager.getInstance(this)
 
     private var options: Options = Options()
     private lateinit var outputFile: String
@@ -68,6 +71,7 @@ class RecorderService : Service() {
     private fun startRecording() {
         mediaProjection?.registerCallback(mediaProjectionCallback, Handler())
         mediaRecorder.start()
+        broadcaster.sendBroadcast(Intent(RecordingStateChange.Recording.name))
     }
 
     private fun stopRecording() {
@@ -76,6 +80,7 @@ class RecorderService : Service() {
         }
         _virtualDisplay?.release()
         destroyMediaProjection()
+        broadcaster.sendBroadcast(Intent(RecordingStateChange.IdleOrFinished.name))
         stopForeground(true)
     }
 
