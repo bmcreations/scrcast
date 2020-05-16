@@ -21,10 +21,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private val watcher: FileWatcher? by lazy {
-        recorder.outputDirectory?.watch(::fileWatcher)
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -36,22 +32,6 @@ class MainActivity : AppCompatActivity() {
                 recorder.record()
             }
         }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        if (watcher?.isWatching == false) {
-            watcher?.watch(::fileWatcher)
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        watcher?.close()
-    }
-
-    private fun fileWatcher(files: List<File>) {
-        Log.d("Main", "files=${files.count()}")
     }
 
     private fun FloatingActionButton.reflectState(recording: Boolean) {
