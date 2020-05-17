@@ -1,39 +1,14 @@
 plugins {
-    id 'com.android.library'
-    id 'kotlin-android'
-    id 'kotlin-kapt'
-    id 'kotlin-android-extensions'
     id 'com.github.dcendents.android-maven'
 }
 
-android {
-    compileSdkVersion androidbuild.compileSdkVersion
+apply from: "$rootProject.projectDir/android-library.gradle"
 
+
+android {
     defaultConfig {
-        minSdkVersion androidbuild.minSdkVersion
-        targetSdkVersion androidbuild.targetSdkVersion
         versionCode 1
         versionName "1.0"
-        testInstrumentationRunner androidbuild.testInstrumentationRunner
-    }
-
-    androidExtensions {
-        experimental = true
-    }
-
-    kotlinOptions {
-        jvmTarget = "1.8"
-        freeCompilerArgs += "-Xjvm-default=compatibility"
-    }
-
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-        debug {
-            minifyEnabled false
-        }
     }
 }
 
@@ -43,6 +18,6 @@ dependencies {
     implementation deps.jetpack.appcompat
     implementation deps.jetpack.localbroadcast
 
-    api deps.kotlin.coroutinesCore
-    api deps.kotlin.coroutinesAndroid
+    implementation deps.kotlin.coroutinesCore
+    implementation deps.kotlin.coroutinesAndroid
 }

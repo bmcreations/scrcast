@@ -2,13 +2,11 @@ package dev.bmcreations.scrcast.app.list
 
 
 import android.os.Bundle
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import dev.bmcreations.scrcast.ScrCast
 import dev.bmcreations.scrcast.app.R
 import kotlinx.android.synthetic.main.activity_main.*
-import java.io.File
 
 
 class MainActivity : AppCompatActivity() {
