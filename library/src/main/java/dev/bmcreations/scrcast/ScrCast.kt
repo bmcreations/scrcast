@@ -6,11 +6,12 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.media.MediaScannerConnection
 import android.media.projection.MediaProjectionManager
-import android.os.Environment
 import android.util.DisplayMetrics
 import android.util.Log
+import androidx.core.app.ActivityCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.karumi.dexter.Dexter
 import com.karumi.dexter.MultiplePermissionsReport
@@ -28,8 +29,6 @@ import dev.bmcreations.scrcast.recorder.RecordingStateChangeCallback
 import dev.bmcreations.scrcast.request.MediaProjectionRequest
 import dev.bmcreations.scrcast.request.MediaProjectionResult
 import java.io.File
-import java.text.SimpleDateFormat
-import java.util.*
 
 /**
  * Main Interface for accessing [scrcast] Library
@@ -74,11 +73,11 @@ class ScrCast private constructor(private val activity: Activity) {
 
     val outputDirectory: File?
         get() {
-            val mediaStorageDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES),options.directory)
+            val mediaStorageDir = options.directory
             mediaStorageDir.apply {
                 if (!exists()) {
                     if (!mkdirs()) {
-                        Log.d("scrcast", "failed to created output directory")
+                        Log.d("scrcast", "failed to create designated output directory")
                         return null
                     }
                 }
@@ -91,11 +90,7 @@ class ScrCast private constructor(private val activity: Activity) {
         get() {
             if (_outputFile == null) {
                 outputDirectory?.let { dir ->
-                    val timestamp = SimpleDateFormat(
-                        "MM_dd_yyyy_hhmmss",
-                        Locale.getDefault()
-                    ).format(Date())
-                    _outputFile = File("${dir.path}${File.separator}$timestamp.mp4")
+                    _outputFile = File("${dir.path}${File.separator}${options.fileNameFormatter}.mp4")
                 } ?: return null
             }
             return _outputFile
@@ -157,6 +152,19 @@ class ScrCast private constructor(private val activity: Activity) {
         onStateChange = callback
     }
 
+    /**
+     * Convenience method for clients to easily check if the required permissions are enabled for storage
+     * Even though we internally will bubble up the permission request and handle the allow/deny,
+     * some clients may want to onboard users via an OOBE or some UX state involving previously recorded files.
+     */
+    fun hasStoragePermissions(): Boolean {
+        val perms = listOf(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE)
+        return perms.all { ActivityCompat.checkSelfPermission(activity, it) == PackageManager.PERMISSION_GRANTED }
+    }
+
+    /**
+     *
+     */
     fun record() {
         if (!isRecording) {
             Dexter.withContext(activity)
