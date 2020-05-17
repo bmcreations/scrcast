@@ -16,7 +16,8 @@ data class Options(
     val videoEncoder: Int = MediaRecorder.VideoEncoder.H264,
     val bitrate: Int = 300_000_000,
     val frameRate: Int = 60,
-    val directory: File = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES), "scrcast"),
+    val directoryName: String = "scrcast",
+    val directory: File = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES), directoryName),
     val fileNameFormatter: String = SimpleDateFormat("MM_dd_yyyy_hhmmss", Locale.getDefault()).format(Date()),
     val outputFormat: Int = MediaRecorder.OutputFormat.MPEG_4
 ): Parcelable
