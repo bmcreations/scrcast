@@ -1,4 +1,4 @@
-package dev.bmcreations.scrcast
+package dev.bmcreations.scrcast.recorder
 
 import android.app.*
 import android.content.Intent
@@ -12,6 +12,8 @@ import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import dev.bmcreations.scrcast.config.Options
+import dev.bmcreations.scrcast.config.orientations
 
 
 class RecorderService : Service() {
@@ -22,7 +24,8 @@ class RecorderService : Service() {
 
     private val broadcaster = LocalBroadcastManager.getInstance(this)
 
-    private var options: Options = Options()
+    private var options: Options =
+        Options()
     private lateinit var outputFile: String
 
     private var rotation = 0
@@ -71,7 +74,7 @@ class RecorderService : Service() {
     private fun startRecording() {
         mediaProjection?.registerCallback(mediaProjectionCallback, Handler())
         mediaRecorder.start()
-        broadcaster.sendBroadcast(Intent(RecordingStateChange.Recording.name))
+        broadcaster.sendBroadcast(Intent(RecordingState.Recording.name))
     }
 
     private fun stopRecording() {
@@ -80,7 +83,7 @@ class RecorderService : Service() {
         }
         _virtualDisplay?.release()
         destroyMediaProjection()
-        broadcaster.sendBroadcast(Intent(RecordingStateChange.IdleOrFinished.name))
+        broadcaster.sendBroadcast(Intent(RecordingState.IdleOrFinished.name))
         stopForeground(true)
     }
 

@@ -1,4 +1,4 @@
-package dev.bmcreations.scrcast
+package dev.bmcreations.scrcast.extensions
 
 import android.content.Context
 import android.content.pm.PackageManager

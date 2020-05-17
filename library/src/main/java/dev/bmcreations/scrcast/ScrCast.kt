@@ -6,15 +6,9 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.media.MediaRecorder
-import android.media.MediaRecorder.AudioEncoder.AAC
-import android.media.MediaRecorder.AudioEncoder.AMR_NB
-import android.media.MediaRecorder.VideoEncoder.H264
-import android.media.MediaRecorder.VideoEncoder.MPEG_4_SP
 import android.media.MediaScannerConnection
 import android.media.projection.MediaProjectionManager
 import android.os.Environment
-import android.os.Parcelable
 import android.util.DisplayMetrics
 import android.util.Log
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -26,32 +20,21 @@ import com.karumi.dexter.listener.multi.CompositeMultiplePermissionsListener
 import com.karumi.dexter.listener.multi.DialogOnAnyDeniedMultiplePermissionsListener
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import dev.bmcreations.dispatcher.ActivityResult
-import kotlinx.android.parcel.Parcelize
+import dev.bmcreations.scrcast.config.Options
+import dev.bmcreations.scrcast.recorder.OnRecordingStateChange
+import dev.bmcreations.scrcast.recorder.RecorderService
+import dev.bmcreations.scrcast.recorder.RecordingState
+import dev.bmcreations.scrcast.recorder.RecordingStateChangeCallback
+import dev.bmcreations.scrcast.request.MediaProjectionRequest
+import dev.bmcreations.scrcast.request.MediaProjectionResult
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
-@Parcelize
-data class Options(
-    val width: Int = 1080,
-    val height: Int = 1920,
-    val videoEncoder: Int = H264,
-    val bitrate: Int = 300_000_000,
-    val frameRate: Int = 60,
-    val directory: String = "scrcast",
-    val outputFormat: Int = MediaRecorder.OutputFormat.MPEG_4
-): Parcelable
-
-interface OnRecordingStateChange {
-    fun onStateChange(recording: Boolean)
-}
-
-internal typealias RecordingStateChangeCallback = (Boolean) -> Unit
-
 /**
  * Main Interface for accessing [scrcast] Library
  */
-class ScrCast private constructor(val activity: Activity) {
+class ScrCast private constructor(private val activity: Activity) {
 
     var isRecording = false
         private set(value) {
@@ -66,7 +49,13 @@ class ScrCast private constructor(val activity: Activity) {
 
     private var onStateChange: RecordingStateChangeCallback? = null
 
-    private var options = Options()
+    private val metrics by lazy {
+        DisplayMetrics().apply { activity.windowManager.defaultDisplay.getMetrics(this) }
+    }
+
+    private val dpi by lazy { metrics.density }
+
+    private var options = Options(width = metrics.widthPixels, height = metrics.heightPixels)
 
     private val broadcaster = LocalBroadcastManager.getInstance(activity)
 
@@ -74,15 +63,11 @@ class ScrCast private constructor(val activity: Activity) {
         override fun onReceive(p0: Context?, p1: Intent?) {
             p1?.action?.let { action ->
                 when(action) {
-                    RecordingStateChange.Recording.name -> isRecording = true
-                    RecordingStateChange.IdleOrFinished.name -> isRecording = false
+                    RecordingState.Recording.name -> isRecording = true
+                    RecordingState.IdleOrFinished.name -> isRecording = false
                 }
             }
         }
-    }
-
-    private val dpi by lazy {
-        DisplayMetrics().apply { activity.windowManager.defaultDisplay.getMetrics(this) }.density
     }
 
     private var _outputFile: File? = null
@@ -135,7 +120,10 @@ class ScrCast private constructor(val activity: Activity) {
     }
 
     private fun startRecording() {
-        MediaProjectionRequest(activity, projectionManager).start(object : MediaProjectionResult {
+        MediaProjectionRequest(
+            activity,
+            projectionManager
+        ).start(object : MediaProjectionResult {
             override fun onCancel() = Unit
             override fun onFailure(error: Throwable) = Unit
 
@@ -204,8 +192,8 @@ class ScrCast private constructor(val activity: Activity) {
         broadcaster.registerReceiver(
             recordingStateHandler,
             IntentFilter().apply {
-                addAction(RecordingStateChange.IdleOrFinished.name)
-                addAction(RecordingStateChange.Recording.name)
+                addAction(RecordingState.IdleOrFinished.name)
+                addAction(RecordingState.Recording.name)
             }
         )
 

@@ -12,7 +12,7 @@
         android:requestLegacyExternalStorage="true"
         tools:targetApi="q">
 
-        <service android:name=".RecorderService"
+        <service android:name=".recorder.RecorderService"
             android:foregroundServiceType="mediaProjection"
             tools:targetApi="q" />
 

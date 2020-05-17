@@ -1,4 +1,4 @@
-package dev.bmcreations.scrcast
+package dev.bmcreations.scrcast.config
 
 import android.util.SparseIntArray
 import android.view.Surface
