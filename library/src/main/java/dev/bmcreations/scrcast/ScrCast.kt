@@ -73,7 +73,7 @@ class ScrCast private constructor(private val activity: Activity) {
 
     val outputDirectory: File?
         get() {
-            val mediaStorageDir = options.directory
+            val mediaStorageDir = options.mediaStorageLocation
             mediaStorageDir.apply {
                 if (!exists()) {
                     if (!mkdirs()) {
