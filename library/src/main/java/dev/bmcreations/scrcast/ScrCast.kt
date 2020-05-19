@@ -124,7 +124,7 @@ class ScrCast private constructor(private val activity: Activity) {
 
             override fun onSuccess(result: ActivityResult?) {
                 if (result != null) {
-                   // activity.moveTaskToBack(true)
+                    if (options.moveTaskToBack) activity.moveTaskToBack(true)
                     val output = outputFile
                     if (output != null) {
                         startService(result, output)
