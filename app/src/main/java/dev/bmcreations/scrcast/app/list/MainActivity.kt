@@ -3,10 +3,10 @@ package dev.bmcreations.scrcast.app.list
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import dev.bmcreations.scrcast.ScrCast
 import dev.bmcreations.scrcast.app.R
-import dev.bmcreations.scrcast.config.Storage
+import dev.bmcreations.scrcast.config.StorageConfig
+import dev.bmcreations.scrcast.config.VideoConfig
 import kotlinx.android.synthetic.main.activity_main.*
 
 
@@ -16,10 +16,13 @@ class MainActivity : AppCompatActivity() {
         ScrCast.use(this).apply {
             updateOptions {
                 copy(
-                    storage = Storage(
+                    video = VideoConfig(
+                        maxLengthSecs = 5
+                    ),
+                    storage = StorageConfig(
                         directoryName = "scrcast-sample"
                     ),
-                    moveTaskToBack = true
+                    moveTaskToBack = false
                 )
             }
             setOnStateChangeListener { recording ->
@@ -39,9 +42,5 @@ class MainActivity : AppCompatActivity() {
                 recorder.record()
             }
         }
-    }
-
-    private fun FloatingActionButton.reflectState(recording: Boolean) {
-        setImageResource(if (recording) R.drawable.ic_stop else R.drawable.ic_camcorder)
     }
 }
