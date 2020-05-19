@@ -6,12 +6,13 @@ import android.graphics.Color
 import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
 import android.media.MediaRecorder
-import android.media.MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED
+import android.media.MediaRecorder.*
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
+import android.util.Log
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import dev.bmcreations.scrcast.config.Options
 import dev.bmcreations.scrcast.config.orientations
@@ -72,9 +73,23 @@ class RecorderService : Service() {
                     setMaxDuration(maxLengthSecs * 1000)
                 }
             }
+            with(options.storage) {
+                if (maxSizeMB > 0) {
+                    setMaxFileSize((maxSizeMB * (1024 * 1024)).toLong())
+                }
+            }
             setOnInfoListener { _, what, _ ->
                 when (what) {
-                    MEDIA_RECORDER_INFO_MAX_DURATION_REACHED -> stopRecording()
+                    MEDIA_RECORDER_INFO_MAX_DURATION_REACHED -> {
+                        Log.d("scrcast", "max duration of ${options.video.maxLengthSecs} seconds reached. Stopping reconrding...")
+                        stopRecording()
+                    }
+                    MEDIA_RECORDER_INFO_MAX_FILESIZE_APPROACHING -> Log.d("scrcast", "Approaching max file size of ${options.storage.maxSizeMB}MB")
+                    MEDIA_RECORDER_INFO_MAX_FILESIZE_REACHED -> {
+                        Log.d("scrcast", "max file size of ${options.storage.maxSizeMB}MB reached. Stopping reconrding...")
+                        stopRecording()
+                    }
+
                 }
             }
             setOrientationHint(orientation)
