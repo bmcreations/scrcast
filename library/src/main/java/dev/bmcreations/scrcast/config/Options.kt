@@ -19,7 +19,8 @@ data class Options(
     val directoryName: String = "scrcast",
     val directory: File = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES),
     val fileNameFormatter: String = SimpleDateFormat("MM_dd_yyyy_hhmmss", Locale.getDefault()).format(Date()),
-    val outputFormat: Int = MediaRecorder.OutputFormat.MPEG_4
+    val outputFormat: Int = MediaRecorder.OutputFormat.MPEG_4,
+    val moveTaskToBack: Boolean = false
 ): Parcelable {
     val mediaStorageLocation = File(directory, directoryName)
 }
