@@ -11,16 +11,27 @@ import java.util.*
 
 @Parcelize
 data class Options(
+    val video: Video = Video(),
+    val storage: Storage = Storage(),
+    val moveTaskToBack: Boolean = false
+): Parcelable
+
+@Parcelize
+data class Video(
     val width: Int = 1080,
     val height: Int = 1920,
     val videoEncoder: Int = MediaRecorder.VideoEncoder.H264,
     val bitrate: Int = 300_000_000,
-    val frameRate: Int = 60,
+    val frameRate: Int = 60
+): Parcelable
+
+@Parcelize
+data class Storage(
     val directoryName: String = "scrcast",
     val directory: File = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES),
     val fileNameFormatter: String = SimpleDateFormat("MM_dd_yyyy_hhmmss", Locale.getDefault()).format(Date()),
-    val outputFormat: Int = MediaRecorder.OutputFormat.MPEG_4,
-    val moveTaskToBack: Boolean = false
+    val outputFormat: Int = MediaRecorder.OutputFormat.MPEG_4
 ): Parcelable {
     val mediaStorageLocation = File(directory, directoryName)
 }
+

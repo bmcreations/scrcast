@@ -45,8 +45,8 @@ class RecorderService : Service() {
             if (_virtualDisplay == null) {
                 _virtualDisplay = mediaProjection?.createVirtualDisplay(
                     "SrcCast",
-                    options.width,
-                    options.height,
+                    options.video.width,
+                    options.video.height,
                     dpi.toInt(),
                     DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
                     mediaRecorder.surface,
@@ -60,12 +60,14 @@ class RecorderService : Service() {
     private val mediaRecorder: MediaRecorder by lazy {
         MediaRecorder().apply {
             setVideoSource(MediaRecorder.VideoSource.SURFACE)
-            setOutputFormat(options.outputFormat)
+            setOutputFormat(options.storage.outputFormat)
             setOutputFile(outputFile)
-            setVideoSize(options.width, options.height)
-            setVideoEncoder(options.videoEncoder)
-            setVideoEncodingBitRate(options.bitrate)
-            setVideoFrameRate(options.frameRate)
+            with(options.video) {
+                setVideoSize(width, height)
+                setVideoEncoder(videoEncoder)
+                setVideoEncodingBitRate(bitrate)
+                setVideoFrameRate(frameRate)
+            }
             setOrientationHint(orientation)
             prepare()
         }

@@ -22,6 +22,7 @@ import com.karumi.dexter.listener.multi.DialogOnAnyDeniedMultiplePermissionsList
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import dev.bmcreations.dispatcher.ActivityResult
 import dev.bmcreations.scrcast.config.Options
+import dev.bmcreations.scrcast.config.Video
 import dev.bmcreations.scrcast.recorder.OnRecordingStateChange
 import dev.bmcreations.scrcast.recorder.RecorderService
 import dev.bmcreations.scrcast.recorder.RecordingState
@@ -54,7 +55,9 @@ class ScrCast private constructor(private val activity: Activity) {
 
     private val dpi by lazy { metrics.density }
 
-    private var options = Options(width = metrics.widthPixels, height = metrics.heightPixels)
+    private var options = Options(
+        Video(width = metrics.widthPixels, height = metrics.heightPixels)
+    )
 
     private val broadcaster = LocalBroadcastManager.getInstance(activity)
 
@@ -73,7 +76,7 @@ class ScrCast private constructor(private val activity: Activity) {
 
     val outputDirectory: File?
         get() {
-            val mediaStorageDir = options.mediaStorageLocation
+            val mediaStorageDir = options.storage.mediaStorageLocation
             mediaStorageDir.apply {
                 if (!exists()) {
                     if (!mkdirs()) {
@@ -90,7 +93,7 @@ class ScrCast private constructor(private val activity: Activity) {
         get() {
             if (_outputFile == null) {
                 outputDirectory?.let { dir ->
-                    _outputFile = File("${dir.path}${File.separator}${options.fileNameFormatter}.mp4")
+                    _outputFile = File("${dir.path}${File.separator}${options.storage.fileNameFormatter}.mp4")
                 } ?: return null
             }
             return _outputFile

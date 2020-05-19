@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import dev.bmcreations.scrcast.ScrCast
 import dev.bmcreations.scrcast.app.R
+import dev.bmcreations.scrcast.config.Storage
 import kotlinx.android.synthetic.main.activity_main.*
 
 
@@ -13,7 +14,14 @@ class MainActivity : AppCompatActivity() {
 
     private val recorder: ScrCast by lazy {
         ScrCast.use(this).apply {
-            updateOptions { copy(directoryName = "scrcast-sample") }
+            updateOptions {
+                copy(
+                    storage = Storage(
+                        directoryName = "scrcast-sample"
+                    ),
+                    moveTaskToBack = true
+                )
+            }
             setOnStateChangeListener { recording ->
                 fab.reflectState(recording)
             }
