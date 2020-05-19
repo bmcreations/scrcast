@@ -1,5 +1,9 @@
 package dev.bmcreations.scrcast.config
 
+import android.app.Notification
+import android.app.NotificationManager
+import android.graphics.Bitmap
+import android.graphics.Color
 import android.media.MediaRecorder
 import android.os.Environment
 import android.os.Parcelable
@@ -12,6 +16,7 @@ import java.util.*
 data class Options(
     val video: VideoConfig = VideoConfig(),
     val storage: StorageConfig = StorageConfig(),
+    val notification: NotificationConfig = NotificationConfig(),
     val moveTaskToBack: Boolean = false
 ): Parcelable
 
@@ -36,3 +41,20 @@ data class StorageConfig(
     val mediaStorageLocation = File(directory, directoryName)
 }
 
+@Parcelize
+data class NotificationConfig(
+    val title: String = "scrcast",
+    val description: String = "Recording in progress...",
+    val icon: Bitmap? = null,
+    val id: Int = 101,
+    val showStop: Boolean = false,
+    val channel: ChannelConfig = ChannelConfig()
+): Parcelable
+
+@Parcelize
+data class ChannelConfig(
+    val id: String = "1337",
+    val name: String = "Recording Service",
+    val lightColor: Int = Color.BLUE,
+    val lockscreenVisibility: Int = Notification.VISIBILITY_PRIVATE
+): Parcelable

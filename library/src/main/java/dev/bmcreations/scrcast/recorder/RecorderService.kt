@@ -1,8 +1,11 @@
 package dev.bmcreations.scrcast.recorder
 
 import android.app.*
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.graphics.drawable.Icon
 import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
 import android.media.MediaRecorder
@@ -14,6 +17,7 @@ import android.os.Handler
 import android.os.IBinder
 import android.util.Log
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import dev.bmcreations.scrcast.R
 import dev.bmcreations.scrcast.config.Options
 import dev.bmcreations.scrcast.config.orientations
 
@@ -157,28 +161,62 @@ class RecorderService : Service() {
     override fun onBind(p0: Intent?): IBinder? = null
 
     private fun setupNotification() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channelId = "1337"
-            val channelName = "Screen Recording"
-            val channel =
-                NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_NONE)
-            channel.lightColor = Color.BLUE
-            channel.lockscreenVisibility = Notification.VISIBILITY_PRIVATE
+        with(options.notification) {
             getSystemService(NotificationManager::class.java)?.let {
-                it.createNotificationChannel(channel)
+                val builder = when {
+                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.O -> {
+                        val notificationChannel = with (channel) {
+                            NotificationChannel(
+                                id,
+                                name,
+                                NotificationManager.IMPORTANCE_NONE
+                            ).apply {
+                                lightColor = Color.BLUE
+                                lockscreenVisibility = Notification.VISIBILITY_PRIVATE
+                            }
+                        }
 
-                val notification: Notification = Notification.Builder(this, channelId).apply {
+                        it.createNotificationChannel(notificationChannel)
+
+                        Notification.Builder(this@RecorderService, notificationChannel.id)
+                    }
+                    else -> Notification.Builder(this@RecorderService)
+                }
+
+                builder.apply {
                     setOngoing(true)
-                    setSmallIcon(android.R.drawable.ic_dialog_alert)
-                    setContentTitle("Recording")
-                    setContentText("in process")
-                }.build()
 
-                startForeground(101, notification)
+                    if (icon != null) {
+                        setSmallIcon(Icon.createWithBitmap(icon))
+                    } else {
+                        setSmallIcon(android.R.drawable.ic_dialog_alert)
+                    }
+
+                    setContentTitle(title)
+                    setContentText(description)
+
+                    if (showStop) {
+                        val stopIntent = Intent(
+                            this@RecorderService,
+                            RecordingNotificationReceiver::class.java
+                        ).apply {
+                            action = Action.Stop.name
+                        }
+                        val stopPendingIntent: PendingIntent =
+                            PendingIntent.getBroadcast(
+                                this@RecorderService, 0, stopIntent, 0
+                            )
+
+                        addAction(Notification.Action.Builder(
+                            Icon.createWithResource(this@RecorderService, R.drawable.ic_stop),
+                            this@RecorderService.getString(R.string.stop),
+                            stopPendingIntent).build()
+                        )
+                    }
+                }
+
+                startForeground(101, builder.build())
             }
-        } else {
-            startForeground(101, Notification())
         }
-
     }
 }
