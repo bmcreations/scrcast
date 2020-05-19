@@ -16,6 +16,8 @@
             android:foregroundServiceType="mediaProjection"
             tools:targetApi="q" />
 
+        <receiver android:name=".recorder.RecordingNotificationReceiver" />
+
     </application>
 
 </manifest>

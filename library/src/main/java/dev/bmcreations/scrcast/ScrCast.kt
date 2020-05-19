@@ -23,9 +23,7 @@ import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import dev.bmcreations.dispatcher.ActivityResult
 import dev.bmcreations.scrcast.config.Options
 import dev.bmcreations.scrcast.config.VideoConfig
-import dev.bmcreations.scrcast.recorder.OnRecordingStateChange
-import dev.bmcreations.scrcast.recorder.RecorderService
-import dev.bmcreations.scrcast.recorder.RecordingState
+import dev.bmcreations.scrcast.recorder.*
 import dev.bmcreations.scrcast.recorder.RecordingStateChangeCallback
 import dev.bmcreations.scrcast.request.MediaProjectionRequest
 import dev.bmcreations.scrcast.request.MediaProjectionResult
@@ -67,6 +65,7 @@ class ScrCast private constructor(private val activity: Activity) {
                 when(action) {
                     RecordingState.Recording.name -> isRecording = true
                     RecordingState.IdleOrFinished.name -> isRecording = false
+                    Action.Stop.name -> stopRecording()
                 }
             }
         }
@@ -205,6 +204,7 @@ class ScrCast private constructor(private val activity: Activity) {
             IntentFilter().apply {
                 addAction(RecordingState.IdleOrFinished.name)
                 addAction(RecordingState.Recording.name)
+                addAction(Action.Stop.name)
             }
         )
 
