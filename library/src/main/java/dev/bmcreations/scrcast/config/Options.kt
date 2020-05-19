@@ -48,6 +48,7 @@ data class NotificationConfig(
     val icon: Bitmap? = null,
     val id: Int = 101,
     val showStop: Boolean = false,
+    val showTimer: Boolean = false,
     val channel: ChannelConfig = ChannelConfig()
 ): Parcelable
 

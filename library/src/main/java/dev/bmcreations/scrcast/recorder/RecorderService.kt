@@ -162,7 +162,7 @@ class RecorderService : Service() {
 
     private fun setupNotification() {
         with(options.notification) {
-            getSystemService(NotificationManager::class.java)?.let {
+            getSystemService(NotificationManager::class.java)?.let { nm ->
                 val builder = when {
                     Build.VERSION.SDK_INT >= Build.VERSION_CODES.O -> {
                         val notificationChannel = with (channel) {
@@ -176,7 +176,7 @@ class RecorderService : Service() {
                             }
                         }
 
-                        it.createNotificationChannel(notificationChannel)
+                        nm.createNotificationChannel(notificationChannel)
 
                         Notification.Builder(this@RecorderService, notificationChannel.id)
                     }
@@ -194,6 +194,11 @@ class RecorderService : Service() {
 
                     setContentTitle(title)
                     setContentText(description)
+
+                    if (showTimer) {
+                        setWhen(System.currentTimeMillis())
+                        setUsesChronometer(true)
+                    }
 
                     if (showStop) {
                         val stopIntent = Intent(
@@ -215,7 +220,7 @@ class RecorderService : Service() {
                     }
                 }
 
-                startForeground(101, builder.build())
+                startForeground(id, builder.build())
             }
         }
     }
