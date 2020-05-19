@@ -22,7 +22,7 @@ import com.karumi.dexter.listener.multi.DialogOnAnyDeniedMultiplePermissionsList
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import dev.bmcreations.dispatcher.ActivityResult
 import dev.bmcreations.scrcast.config.Options
-import dev.bmcreations.scrcast.config.Video
+import dev.bmcreations.scrcast.config.VideoConfig
 import dev.bmcreations.scrcast.recorder.OnRecordingStateChange
 import dev.bmcreations.scrcast.recorder.RecorderService
 import dev.bmcreations.scrcast.recorder.RecordingState
@@ -56,7 +56,7 @@ class ScrCast private constructor(private val activity: Activity) {
     private val dpi by lazy { metrics.density }
 
     private var options = Options(
-        Video(width = metrics.widthPixels, height = metrics.heightPixels)
+        VideoConfig(width = metrics.widthPixels, height = metrics.heightPixels)
     )
 
     private val broadcaster = LocalBroadcastManager.getInstance(activity)
