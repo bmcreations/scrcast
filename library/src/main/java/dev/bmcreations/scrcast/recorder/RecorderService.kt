@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
 import android.media.MediaRecorder
+import android.media.MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
 import android.os.Build
@@ -67,6 +68,14 @@ class RecorderService : Service() {
                 setVideoEncoder(videoEncoder)
                 setVideoEncodingBitRate(bitrate)
                 setVideoFrameRate(frameRate)
+                if (maxLengthSecs > 0) {
+                    setMaxDuration(maxLengthSecs * 1000)
+                }
+            }
+            setOnInfoListener { _, what, _ ->
+                when (what) {
+                    MEDIA_RECORDER_INFO_MAX_DURATION_REACHED -> stopRecording()
+                }
             }
             setOrientationHint(orientation)
             prepare()
