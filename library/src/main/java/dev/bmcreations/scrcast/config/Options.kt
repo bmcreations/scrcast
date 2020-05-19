@@ -1,12 +1,12 @@
 package dev.bmcreations.scrcast.config
 
 import android.app.Notification
-import android.app.NotificationManager
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.media.MediaRecorder
 import android.os.Environment
 import android.os.Parcelable
+import android.util.DisplayMetrics
 import kotlinx.android.parcel.Parcelize
 import java.io.File
 import java.text.SimpleDateFormat
@@ -22,8 +22,8 @@ data class Options(
 
 @Parcelize
 data class VideoConfig(
-    val width: Int = 1080,
-    val height: Int = 1920,
+    val width: Int = -1,
+    val height: Int = -1,
     val videoEncoder: Int = MediaRecorder.VideoEncoder.H264,
     val bitrate: Int = 300_000_000,
     val frameRate: Int = 60,
