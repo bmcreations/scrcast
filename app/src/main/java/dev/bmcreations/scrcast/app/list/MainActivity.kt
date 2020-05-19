@@ -16,9 +16,6 @@ class MainActivity : AppCompatActivity() {
         ScrCast.use(this).apply {
             updateOptions {
                 copy(
-                    video = VideoConfig(
-                        maxLengthSecs = 5
-                    ),
                     storage = StorageConfig(
                         directoryName = "scrcast-sample"
                     ),
