@@ -4,14 +4,14 @@ import android.graphics.Bitmap
 import android.util.DisplayMetrics
 import java.io.File
 
-class OptionsBuilder(private val metrics: DisplayMetrics) {
+class OptionsBuilder() {
     private var video = VideoConfig()
     private var storage = StorageConfig()
     private var notification = NotificationConfig()
     var moveTaskToBack: Boolean = false
 
     fun video(config: VideoConfigBuilder.() -> Unit) {
-        video = VideoConfigBuilder(metrics).apply(config).build()
+        video = VideoConfigBuilder().apply(config).build()
     }
 
     fun OptionsBuilder.storage(config: StorageConfigBuilder.() -> Unit) {
@@ -25,7 +25,7 @@ class OptionsBuilder(private val metrics: DisplayMetrics) {
     fun build(): Options = Options(video, storage, notification, moveTaskToBack)
 }
 
-class VideoConfigBuilder(private val metrics: DisplayMetrics) {
+class VideoConfigBuilder {
     private val defaultConfig = VideoConfig()
     var width: Int = defaultConfig.width
     var height: Int = defaultConfig.height
@@ -34,16 +34,7 @@ class VideoConfigBuilder(private val metrics: DisplayMetrics) {
     var frameRate: Int = defaultConfig.frameRate
     var maxLengthSecs: Int = defaultConfig.maxLengthSecs
 
-    fun build(): VideoConfig {
-        if (width == -1) {
-            width = metrics.widthPixels
-        }
-
-        if (height == -1) {
-            height = metrics.heightPixels
-        }
-        return VideoConfig(width, height, videoEncoder, bitrate, frameRate, maxLengthSecs)
-    }
+    fun build(): VideoConfig = VideoConfig(width, height, videoEncoder, bitrate, frameRate, maxLengthSecs)
 }
 
 class StorageConfigBuilder {

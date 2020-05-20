@@ -136,11 +136,22 @@ class ScrCast private constructor(private val activity: Activity) {
 
     @JvmSynthetic
     fun options(opts: OptionsBuilder.() -> Unit) {
-        options = OptionsBuilder(metrics).apply(opts).build()
+        options = handleDynamicVideoSize(OptionsBuilder().apply(opts).build())
     }
 
     fun updateOptions(options: Options) {
-        this.options = options
+        this.options = handleDynamicVideoSize(options)
+    }
+
+    private fun handleDynamicVideoSize(options: Options): Options {
+        var reconfig: Options = options
+        if (options.video.width == -1) {
+            reconfig = reconfig.copy(video = reconfig.video.copy(width = metrics.widthPixels))
+        }
+        if (options.video.height == -1) {
+            reconfig = reconfig.copy(video = reconfig.video.copy(height = metrics.heightPixels))
+        }
+        return reconfig
     }
 
     fun setOnStateChangeListener(listener : OnRecordingStateChange) {
