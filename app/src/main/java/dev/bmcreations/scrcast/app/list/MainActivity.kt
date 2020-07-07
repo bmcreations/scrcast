@@ -32,6 +32,7 @@ class MainActivity : AppCompatActivity() {
                     showTimer = true
                 }
                 moveTaskToBack = false
+                startDelayMs = 5_000
             }
 
             setOnStateChangeListener { recording ->

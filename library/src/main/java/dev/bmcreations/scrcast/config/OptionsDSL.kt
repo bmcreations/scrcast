@@ -9,6 +9,7 @@ class OptionsBuilder() {
     private var storage = StorageConfig()
     private var notification = NotificationConfig()
     var moveTaskToBack: Boolean = false
+    var startDelayMs: Long = 0
 
     fun video(config: VideoConfigBuilder.() -> Unit) {
         video = VideoConfigBuilder().apply(config).build()
@@ -22,7 +23,7 @@ class OptionsBuilder() {
         notification = NotificationConfigBuilder().apply(config).build()
     }
 
-    fun build(): Options = Options(video, storage, notification, moveTaskToBack)
+    fun build(): Options = Options(video, storage, notification, moveTaskToBack, startDelayMs)
 }
 
 class VideoConfigBuilder {
