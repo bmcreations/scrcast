@@ -25,6 +25,7 @@ import dev.bmcreations.scrcast.config.Options
 import dev.bmcreations.scrcast.config.OptionsBuilder
 import dev.bmcreations.scrcast.recorder.*
 import dev.bmcreations.scrcast.recorder.RecordingStateChangeCallback
+import dev.bmcreations.scrcast.recorder.service.RecorderService
 import dev.bmcreations.scrcast.request.MediaProjectionRequest
 import dev.bmcreations.scrcast.request.MediaProjectionResult
 import java.io.File

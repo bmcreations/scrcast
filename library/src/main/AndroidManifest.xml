@@ -12,11 +12,11 @@
         android:requestLegacyExternalStorage="true"
         tools:targetApi="q">
 
-        <service android:name=".recorder.RecorderService"
+        <service android:name=".recorder.service.RecorderService"
             android:foregroundServiceType="mediaProjection"
             tools:targetApi="q" />
 
-        <receiver android:name=".recorder.RecordingNotificationReceiver" />
+        <receiver android:name=".recorder.receiver.RecordingNotificationReceiver" />
 
     </application>
 
