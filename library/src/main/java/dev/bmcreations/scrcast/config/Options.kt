@@ -27,7 +27,7 @@ data class VideoConfig(
     val width: Int = -1,
     val height: Int = -1,
     val videoEncoder: Int = MediaRecorder.VideoEncoder.H264,
-    val bitrate: Int = 300_000_000,
+    val bitrate: Int = 4_000_000,
     val frameRate: Int = 60,
     val maxLengthSecs: Int = 0
 ): Parcelable
