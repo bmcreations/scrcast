@@ -4,6 +4,7 @@ import android.app.Notification
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.media.MediaRecorder
+import android.os.Build
 import android.os.Environment
 import android.os.Parcelable
 import android.util.DisplayMetrics
@@ -17,7 +18,8 @@ data class Options(
     val video: VideoConfig = VideoConfig(),
     val storage: StorageConfig = StorageConfig(),
     val notification: NotificationConfig = NotificationConfig(),
-    val moveTaskToBack: Boolean = false
+    val moveTaskToBack: Boolean = false,
+    val startDelayMs: Long = 0
 ): Parcelable
 
 @Parcelize
@@ -35,7 +37,10 @@ data class StorageConfig(
     val directoryName: String = "scrcast",
     val directory: File = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES),
     val fileNameFormatter: String = SimpleDateFormat("MM_dd_yyyy_hhmmss", Locale.getDefault()).format(Date()),
-    val outputFormat: Int = MediaRecorder.OutputFormat.MPEG_4,
+    val outputFormat: Int = when {
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.O -> MediaRecorder.OutputFormat.MPEG_2_TS
+        else -> MediaRecorder.OutputFormat.MPEG_4
+    },
     val maxSizeMB: Float = 0f
 ): Parcelable {
     val mediaStorageLocation = File(directory, directoryName)

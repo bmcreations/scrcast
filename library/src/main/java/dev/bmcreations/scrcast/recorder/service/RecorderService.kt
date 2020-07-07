@@ -21,6 +21,10 @@ import dev.bmcreations.scrcast.config.orientations
 import dev.bmcreations.scrcast.recorder.Action
 import dev.bmcreations.scrcast.recorder.receiver.RecordingNotificationReceiver
 import dev.bmcreations.scrcast.recorder.RecordingState
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
 class RecorderService : Service() {
@@ -66,7 +70,7 @@ class RecorderService : Service() {
 
     private val mediaRecorder: MediaRecorder by lazy {
         MediaRecorder().apply {
-            setVideoSource(MediaRecorder.VideoSource.SURFACE)
+            setVideoSource(VideoSource.SURFACE)
             setOutputFormat(options.storage.outputFormat)
             setOutputFile(outputFile)
             with(options.video) {
@@ -103,9 +107,20 @@ class RecorderService : Service() {
     }
 
     private fun startRecording() {
-        mediaProjection?.registerCallback(mediaProjectionCallback, Handler())
-        mediaRecorder.start()
-        broadcaster.sendBroadcast(Intent(RecordingState.Recording.name))
+        GlobalScope.launch(Dispatchers.IO) {
+            with(options.startDelayMs) {
+                if (this > 0) {
+                    broadcaster.sendBroadcast(Intent(RecordingState.InDelay.name))
+                }
+                delay(options.startDelayMs)
+            }
+
+            GlobalScope.launch(Dispatchers.Main) {
+                mediaProjection?.registerCallback(mediaProjectionCallback, Handler())
+                mediaRecorder.start()
+                broadcaster.sendBroadcast(Intent(RecordingState.Recording.name))
+            }
+        }
     }
 
     private fun stopRecording() {
