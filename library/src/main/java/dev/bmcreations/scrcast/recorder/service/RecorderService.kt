@@ -1,8 +1,6 @@
-package dev.bmcreations.scrcast.recorder
+package dev.bmcreations.scrcast.recorder.service
 
 import android.app.*
-import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.Icon
@@ -20,6 +18,9 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import dev.bmcreations.scrcast.R
 import dev.bmcreations.scrcast.config.Options
 import dev.bmcreations.scrcast.config.orientations
+import dev.bmcreations.scrcast.recorder.Action
+import dev.bmcreations.scrcast.recorder.receiver.RecordingNotificationReceiver
+import dev.bmcreations.scrcast.recorder.RecordingState
 
 
 class RecorderService : Service() {
