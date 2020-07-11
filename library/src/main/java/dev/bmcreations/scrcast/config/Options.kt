@@ -19,7 +19,8 @@ data class Options(
     val storage: StorageConfig = StorageConfig(),
     val notification: NotificationConfig = NotificationConfig(),
     val moveTaskToBack: Boolean = false,
-    val startDelayMs: Long = 0
+    val startDelayMs: Long = 0,
+    val stopOnScreenOff: Boolean = false
 ): Parcelable
 
 @Parcelize
