@@ -27,7 +27,7 @@ data class VideoConfig(
     val width: Int = -1,
     val height: Int = -1,
     val videoEncoder: Int = MediaRecorder.VideoEncoder.H264,
-    val bitrate: Int = 4_000_000,
+    val bitrate: Int = 8_000_000,
     val frameRate: Int = 60,
     val maxLengthSecs: Int = 0
 ): Parcelable
@@ -37,10 +37,7 @@ data class StorageConfig(
     val directoryName: String = "scrcast",
     val directory: File = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES),
     val fileNameFormatter: String = SimpleDateFormat("MM_dd_yyyy_hhmmss", Locale.getDefault()).format(Date()),
-    val outputFormat: Int = when {
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.O -> MediaRecorder.OutputFormat.MPEG_2_TS
-        else -> MediaRecorder.OutputFormat.MPEG_4
-    },
+    val outputFormat: Int = MediaRecorder.OutputFormat.MPEG_4,
     val maxSizeMB: Float = 0f
 ): Parcelable {
     val mediaStorageLocation = File(directory, directoryName)
