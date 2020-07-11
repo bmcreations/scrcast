@@ -1,15 +1,18 @@
+@file:Suppress("MemberVisibilityCanBePrivate")
+
 package dev.bmcreations.scrcast.config
 
 import android.graphics.Bitmap
 import android.util.DisplayMetrics
 import java.io.File
 
-class OptionsBuilder() {
+class OptionsBuilder {
     private var video = VideoConfig()
     private var storage = StorageConfig()
     private var notification = NotificationConfig()
     var moveTaskToBack: Boolean = false
     var startDelayMs: Long = 0
+    var stopOnScreenOff: Boolean = false
 
     fun video(config: VideoConfigBuilder.() -> Unit) {
         video = VideoConfigBuilder().apply(config).build()
@@ -23,7 +26,7 @@ class OptionsBuilder() {
         notification = NotificationConfigBuilder().apply(config).build()
     }
 
-    fun build(): Options = Options(video, storage, notification, moveTaskToBack, startDelayMs)
+    fun build(): Options = Options(video, storage, notification, moveTaskToBack, startDelayMs, stopOnScreenOff)
 }
 
 class VideoConfigBuilder {

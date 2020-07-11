@@ -1,7 +1,10 @@
 package dev.bmcreations.scrcast.recorder.service
 
 import android.app.*
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.graphics.Color
 import android.graphics.drawable.Icon
 import android.hardware.display.DisplayManager
@@ -19,8 +22,8 @@ import dev.bmcreations.scrcast.R
 import dev.bmcreations.scrcast.config.Options
 import dev.bmcreations.scrcast.config.orientations
 import dev.bmcreations.scrcast.recorder.Action
-import dev.bmcreations.scrcast.recorder.receiver.RecordingNotificationReceiver
 import dev.bmcreations.scrcast.recorder.RecordingState
+import dev.bmcreations.scrcast.recorder.receiver.RecordingNotificationReceiver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
@@ -38,6 +41,17 @@ class RecorderService : Service() {
     }
 
     private val broadcaster = LocalBroadcastManager.getInstance(this)
+
+    private var screenHandler = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == Intent.ACTION_SCREEN_OFF) {
+                Log.d("scrcast", "stopping recording with screen off per request")
+                if (state == RecordingState.InDelay) {
+                    stopRecording()
+                }
+            }
+        }
+    }
 
     private var state: RecordingState = RecordingState.IdleOrFinished
     set(value) {
@@ -146,6 +160,12 @@ class RecorderService : Service() {
 
                 virtualDisplay // touch
 
+                if (options.stopOnScreenOff) {
+                    with(IntentFilter(Intent.ACTION_SCREEN_OFF)) {
+                        registerReceiver(screenHandler, this)
+                    }
+                }
+
                 mediaProjection?.registerCallback(mediaProjectionCallback, Handler())
                 mediaRecorder.start()
                 state = RecordingState.Recording
@@ -197,6 +217,9 @@ class RecorderService : Service() {
 
     override fun onDestroy() {
         stopRecording()
+        if (options.stopOnScreenOff) {
+            unregisterReceiver(screenHandler)
+        }
         super.onDestroy()
     }
 
