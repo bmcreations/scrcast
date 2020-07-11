@@ -33,14 +33,21 @@ class RecorderService : Service() {
         getSystemService(MediaProjectionManager::class.java)
     }
 
+    private val notificationManager by lazy {
+        getSystemService(NotificationManager::class.java)
+    }
+
     private val broadcaster = LocalBroadcastManager.getInstance(this)
 
-    private var options: Options =
-        Options()
+    private var state: RecordingState = RecordingState.IdleOrFinished
+    set(value) {
+        field = value
+        broadcaster.sendBroadcast(Intent(value.name))
+    }
+
+    private var options: Options = Options()
     private lateinit var outputFile: String
-
     private var rotation = 0
-
     private val orientation by lazy {
         orientations.get(rotation + 90)
     }
@@ -106,19 +113,42 @@ class RecorderService : Service() {
         }
     }
 
-    private fun startRecording() {
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val notificationChannel = with(options.notification.channel) {
+                NotificationChannel(
+                    id,
+                    name,
+                    NotificationManager.IMPORTANCE_NONE
+                ).apply {
+                    lightColor = Color.BLUE
+                    lockscreenVisibility = Notification.VISIBILITY_PRIVATE
+                }
+            }
+
+            notificationManager.createNotificationChannel(notificationChannel)
+        }
+    }
+
+
+    private fun startRecording(code: Int, data: Intent) {
         GlobalScope.launch(Dispatchers.IO) {
             with(options.startDelayMs) {
                 if (this > 0) {
-                    broadcaster.sendBroadcast(Intent(RecordingState.InDelay.name))
+                    state = RecordingState.InDelay
                 }
                 delay(options.startDelayMs)
             }
 
             GlobalScope.launch(Dispatchers.Main) {
+                startForeground(options.notification.id, setupNotification())
+                mediaProjection = projectionManager.getMediaProjection(code, data)
+
+                virtualDisplay // touch
+
                 mediaProjection?.registerCallback(mediaProjectionCallback, Handler())
                 mediaRecorder.start()
-                broadcaster.sendBroadcast(Intent(RecordingState.Recording.name))
+                state = RecordingState.Recording
             }
         }
     }
@@ -129,7 +159,7 @@ class RecorderService : Service() {
         }
         _virtualDisplay?.release()
         destroyMediaProjection()
-        broadcaster.sendBroadcast(Intent(RecordingState.IdleOrFinished.name))
+        state = RecordingState.IdleOrFinished
         stopForeground(true)
     }
 
@@ -154,16 +184,12 @@ class RecorderService : Service() {
             dpi = it.getFloatExtra("dpi", 0f)
             outputFile = it.getStringExtra("outputFile") ?: ""
 
-            val code = it.getIntExtra("code", -1)
-            val data = it.getParcelableExtra("data") ?: Intent()
+            createNotificationChannel()
 
-            setupNotification()
-
-            mediaProjection = projectionManager.getMediaProjection(code, data)
-
-            virtualDisplay // touch
-
-            startRecording()
+            startRecording(
+                code = it.getIntExtra("code", -1),
+                data = it.getParcelableExtra("data") ?: Intent()
+            )
         }
 
         return START_STICKY
@@ -176,68 +202,51 @@ class RecorderService : Service() {
 
     override fun onBind(p0: Intent?): IBinder? = null
 
-    private fun setupNotification() {
-        with(options.notification) {
-            getSystemService(NotificationManager::class.java)?.let { nm ->
-                val builder = when {
-                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.O -> {
-                        val notificationChannel = with (channel) {
-                            NotificationChannel(
-                                id,
-                                name,
-                                NotificationManager.IMPORTANCE_NONE
-                            ).apply {
-                                lightColor = Color.BLUE
-                                lockscreenVisibility = Notification.VISIBILITY_PRIVATE
-                            }
-                        }
-
-                        nm.createNotificationChannel(notificationChannel)
-
-                        Notification.Builder(this@RecorderService, notificationChannel.id)
-                    }
-                    else -> Notification.Builder(this@RecorderService)
-                }
-
-                builder.apply {
-                    setOngoing(true)
-
-                    if (icon != null) {
-                        setSmallIcon(Icon.createWithBitmap(icon))
-                    } else {
-                        setSmallIcon(android.R.drawable.ic_dialog_alert)
-                    }
-
-                    setContentTitle(title)
-                    setContentText(description)
-
-                    if (showTimer) {
-                        setWhen(System.currentTimeMillis())
-                        setUsesChronometer(true)
-                    }
-
-                    if (showStop) {
-                        val stopIntent = Intent(
-                            this@RecorderService,
-                            RecordingNotificationReceiver::class.java
-                        ).apply {
-                            action = Action.Stop.name
-                        }
-                        val stopPendingIntent: PendingIntent =
-                            PendingIntent.getBroadcast(
-                                this@RecorderService, 0, stopIntent, 0
-                            )
-
-                        addAction(Notification.Action.Builder(
-                            Icon.createWithResource(this@RecorderService, R.drawable.ic_stop),
-                            this@RecorderService.getString(R.string.stop),
-                            stopPendingIntent).build()
-                        )
-                    }
-                }
-
-                startForeground(id, builder.build())
+    private fun setupNotification(): Notification {
+        return with(options.notification) {
+            val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                Notification.Builder(this@RecorderService, options.notification.channel.id)
+            } else {
+                Notification.Builder(this@RecorderService)
             }
+
+            builder.apply {
+                setOngoing(true)
+
+                if (icon != null) {
+                    setSmallIcon(Icon.createWithBitmap(icon))
+                } else {
+                    setSmallIcon(android.R.drawable.ic_dialog_alert)
+                }
+
+                setContentTitle(title)
+                setContentText(description)
+
+                if (showTimer) {
+                    setWhen(System.currentTimeMillis())
+                    setUsesChronometer(true)
+                }
+
+                if (showStop) {
+                    val stopIntent = Intent(
+                        this@RecorderService,
+                        RecordingNotificationReceiver::class.java
+                    ).apply {
+                        action = Action.Stop.name
+                    }
+                    val stopPendingIntent: PendingIntent =
+                        PendingIntent.getBroadcast(
+                            this@RecorderService, 0, stopIntent, 0
+                        )
+
+                    addAction(Notification.Action.Builder(
+                        Icon.createWithResource(this@RecorderService, R.drawable.ic_stop),
+                        this@RecorderService.getString(R.string.stop),
+                        stopPendingIntent).build()
+                    )
+                }
+            }
+            builder.build()
         }
     }
 }
