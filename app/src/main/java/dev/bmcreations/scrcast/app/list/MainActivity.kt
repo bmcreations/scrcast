@@ -32,6 +32,7 @@ class MainActivity : AppCompatActivity() {
                     showTimer = true
                 }
                 moveTaskToBack = false
+                stopOnScreenOff = true
                 startDelayMs = 5_000
             }
 
