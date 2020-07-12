@@ -14,7 +14,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 @Parcelize
-data class Options(
+data class Options @JvmOverloads constructor(
     val video: VideoConfig = VideoConfig(),
     val storage: StorageConfig = StorageConfig(),
     val notification: NotificationConfig = NotificationConfig(),
@@ -24,7 +24,7 @@ data class Options(
 ): Parcelable
 
 @Parcelize
-data class VideoConfig(
+data class VideoConfig @JvmOverloads constructor(
     val width: Int = -1,
     val height: Int = -1,
     val videoEncoder: Int = MediaRecorder.VideoEncoder.H264,
@@ -34,7 +34,7 @@ data class VideoConfig(
 ): Parcelable
 
 @Parcelize
-data class StorageConfig(
+data class StorageConfig @JvmOverloads constructor(
     val directoryName: String = "scrcast",
     val directory: File = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES),
     val fileNameFormatter: String = SimpleDateFormat("MM_dd_yyyy_hhmmss", Locale.getDefault()).format(Date()),
@@ -45,7 +45,7 @@ data class StorageConfig(
 }
 
 @Parcelize
-data class NotificationConfig(
+data class NotificationConfig @JvmOverloads constructor(
     val title: String = "scrcast",
     val description: String = "Recording in progress...",
     val icon: Bitmap? = null,
@@ -56,7 +56,7 @@ data class NotificationConfig(
 ): Parcelable
 
 @Parcelize
-data class ChannelConfig(
+data class ChannelConfig @JvmOverloads constructor(
     val id: String = "1337",
     val name: String = "Recording Service",
     val lightColor: Int = Color.BLUE,
