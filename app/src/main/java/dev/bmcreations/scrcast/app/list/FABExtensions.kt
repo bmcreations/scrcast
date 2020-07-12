@@ -34,3 +34,12 @@ fun FloatingActionButton.reflectState(recording: Boolean) {
         if (recording) ContextCompat.getColor(context, R.color.stop_recording) else ContextCompat.getColor(context, R.color.teal200)
     )
 }
+
+class FABExtensions {
+    companion object {
+        @JvmStatic
+        fun reflectRecorderState(fab: FloatingActionButton, recording: Boolean) {
+            fab.reflectState(recording)
+        }
+    }
+}
