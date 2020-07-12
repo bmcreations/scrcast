@@ -4,8 +4,10 @@ package dev.bmcreations.scrcast.app.list
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.drawable.toBitmap
+import androidx.core.view.isVisible
 import dev.bmcreations.scrcast.ScrCast
 import dev.bmcreations.scrcast.app.R
+import dev.bmcreations.scrcast.recorder.RecordingState
 import kotlinx.android.synthetic.main.activity_main.*
 
 
@@ -36,8 +38,12 @@ class MainActivity : AppCompatActivity() {
                 startDelayMs = 5_000
             }
 
-            setOnStateChangeListener { recording ->
-                fab.reflectState(recording)
+            setOnStateChangeListener { state ->
+                fab.reflectState(state)
+                start_timer.isVisible = state is RecordingState.Delay
+                when (state) {
+                    is RecordingState.Delay -> start_timer.text = state.remainingSeconds.toString()
+                }
             }
         }
     }

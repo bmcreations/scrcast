@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.textview.MaterialTextView;
 
 import dev.bmcreations.scrcast.ScrCast;
 import dev.bmcreations.scrcast.app.R;
@@ -25,12 +26,14 @@ import dev.bmcreations.scrcast.config.StorageConfig;
 import dev.bmcreations.scrcast.config.VideoConfig;
 import dev.bmcreations.scrcast.config.VideoConfigBuilder;
 import dev.bmcreations.scrcast.recorder.OnRecordingStateChange;
+import dev.bmcreations.scrcast.recorder.RecordingState;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 
 public class JavaMainActivity extends AppCompatActivity {
 
     private FloatingActionButton fab;
+    private MaterialTextView startTimer;
     private ScrCast recorder;
 
     @Override
@@ -38,6 +41,7 @@ public class JavaMainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         fab = findViewById(R.id.fab);
+        startTimer = findViewById(R.id.start_timer);
 
         setupRecorder();
 
@@ -87,8 +91,13 @@ public class JavaMainActivity extends AppCompatActivity {
         recorder.updateOptions(options);
 
         // listen for state changes
-        recorder.setOnStateChangeListener(isRecording ->
-                FABExtensions.reflectRecorderState(fab, isRecording));
+        recorder.setOnStateChangeListener(state -> {
+            FABExtensions.reflectRecorderState(fab, state);
+            startTimer.setVisibility(state instanceof RecordingState.Delay ? View.VISIBLE : View.GONE);
+            if (state instanceof RecordingState.Delay) {
+                startTimer.setText(((RecordingState.Delay) state).getRemainingSeconds());
+            }
+        });
     }
 
     private void bindViews() {

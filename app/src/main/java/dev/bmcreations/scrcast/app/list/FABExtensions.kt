@@ -8,6 +8,9 @@ import androidx.annotation.ColorInt
 import androidx.core.content.ContextCompat
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import dev.bmcreations.scrcast.app.R
+import dev.bmcreations.scrcast.recorder.RecordingState
+import dev.bmcreations.scrcast.recorder.RecordingState.Idle
+import dev.bmcreations.scrcast.recorder.RecordingState.Recording
 
 @SuppressLint("ObjectAnimatorBinding")
 private fun FloatingActionButton.animateColorChange(@ColorInt fromColor: Int, @ColorInt toColor: Int, startDelay: Long = 0) {
@@ -27,19 +30,28 @@ private fun FloatingActionButton.animateColorChange(@ColorInt fromColor: Int, @C
     colorAnimator.start()
 }
 
-fun FloatingActionButton.reflectState(recording: Boolean) {
-    setImageResource(if (recording) R.drawable.ic_stop else R.drawable.ic_camcorder)
-    animateColorChange(
-        if (recording) ContextCompat.getColor(context, R.color.teal200) else ContextCompat.getColor(context, R.color.stop_recording),
-        if (recording) ContextCompat.getColor(context, R.color.stop_recording) else ContextCompat.getColor(context, R.color.teal200)
-    )
+fun FloatingActionButton.reflectState(state: RecordingState) {
+    if (state == Recording || state == Idle) {
+        val isRecording = state == Recording
+        setImageResource(if (isRecording) R.drawable.ic_stop else R.drawable.ic_camcorder)
+        animateColorChange(
+            if (isRecording) ContextCompat.getColor(
+                context,
+                R.color.teal200
+            ) else ContextCompat.getColor(context, R.color.stop_recording),
+            if (isRecording) ContextCompat.getColor(
+                context,
+                R.color.stop_recording
+            ) else ContextCompat.getColor(context, R.color.teal200)
+        )
+    }
 }
 
 class FABExtensions {
     companion object {
         @JvmStatic
-        fun reflectRecorderState(fab: FloatingActionButton, recording: Boolean) {
-            fab.reflectState(recording)
+        fun reflectRecorderState(fab: FloatingActionButton, state: RecordingState) {
+            fab.reflectState(state)
         }
     }
 }
