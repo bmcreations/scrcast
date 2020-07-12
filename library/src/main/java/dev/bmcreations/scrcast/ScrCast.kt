@@ -146,7 +146,7 @@ class ScrCast private constructor(private val activity: Activity) {
     fun pause() {
         if (supportsPauseResume) {
             if (state.isRecording) {
-                broadcaster.sendBroadcast(Intent(Paused.action))
+                broadcaster.sendBroadcast(Intent(Action.Pause.name))
                 state = Paused
             }
         }
@@ -155,7 +155,7 @@ class ScrCast private constructor(private val activity: Activity) {
     fun resume() {
         if (supportsPauseResume) {
             if (state.isPaused) {
-                broadcaster.sendBroadcast(Intent(Recording.action))
+                broadcaster.sendBroadcast(Intent(Action.Resume.name))
                 state = Recording
             } else {
                 record()

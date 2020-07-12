@@ -43,8 +43,8 @@ class RecorderService : Service() {
     private val pauseResumeHandler = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             when (intent?.action) {
-                STATE_PAUSED -> pause()
-                STATE_RECORDING -> resume()
+                ACTION_PAUSE -> pause()
+                ACTION_RESUME -> resume()
             }
         }
     }
@@ -205,7 +205,7 @@ class RecorderService : Service() {
                 }
             }
 
-            with(IntentFilter(STATE_PAUSED).apply { addAction(STATE_RECORDING) }) {
+            with(IntentFilter(ACTION_PAUSE).apply { addAction(ACTION_RESUME) }) {
                 broadcaster.registerReceiver(pauseResumeHandler, this)
             }
 
