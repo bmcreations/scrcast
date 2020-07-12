@@ -21,13 +21,12 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import dev.bmcreations.scrcast.R
 import dev.bmcreations.scrcast.config.Options
 import dev.bmcreations.scrcast.config.orientations
+import dev.bmcreations.scrcast.extensions.countdown
 import dev.bmcreations.scrcast.recorder.Action
+import dev.bmcreations.scrcast.recorder.EXTRA_DELAY_REMAINING
 import dev.bmcreations.scrcast.recorder.RecordingState
 import dev.bmcreations.scrcast.recorder.receiver.RecordingNotificationReceiver
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 
 
 class RecorderService : Service() {
@@ -46,17 +45,21 @@ class RecorderService : Service() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == Intent.ACTION_SCREEN_OFF) {
                 Log.d("scrcast", "stopping recording with screen off per request")
-                if (state == RecordingState.InDelay) {
+                if (state == RecordingState.Recording) {
                     stopRecording()
                 }
             }
         }
     }
 
-    private var state: RecordingState = RecordingState.IdleOrFinished
+    private var state: RecordingState = RecordingState.Idle
     set(value) {
         field = value
-        broadcaster.sendBroadcast(Intent(value.name))
+        broadcaster.sendBroadcast(Intent(value.action).apply {
+            if (value is RecordingState.Delay) {
+                putExtra(EXTRA_DELAY_REMAINING, value.remainingSeconds)
+            }
+        })
     }
 
     private var options: Options = Options()
@@ -146,30 +149,33 @@ class RecorderService : Service() {
 
 
     private fun startRecording(code: Int, data: Intent) {
-        GlobalScope.launch(Dispatchers.IO) {
-            with(options.startDelayMs) {
-                if (this > 0) {
-                    state = RecordingState.InDelay
+        if (options.startDelayMs > 0) {
+            options.startDelayMs.countdown(
+                repeatMillis = 1_000,
+                onTick = { state = RecordingState.Delay((it / 1000).toInt() + 1) },
+                after = { recordInternal(code, data) }
+            )
+        } else {
+            recordInternal(code, data)
+        }
+    }
+
+    private fun recordInternal(code: Int, data: Intent) {
+        GlobalScope.launch(Dispatchers.Main) {
+            startForeground(options.notification.id, setupNotification())
+            mediaProjection = projectionManager.getMediaProjection(code, data)
+
+            virtualDisplay // touch
+
+            if (options.stopOnScreenOff) {
+                with(IntentFilter(Intent.ACTION_SCREEN_OFF)) {
+                    registerReceiver(screenHandler, this)
                 }
-                delay(options.startDelayMs)
             }
 
-            GlobalScope.launch(Dispatchers.Main) {
-                startForeground(options.notification.id, setupNotification())
-                mediaProjection = projectionManager.getMediaProjection(code, data)
-
-                virtualDisplay // touch
-
-                if (options.stopOnScreenOff) {
-                    with(IntentFilter(Intent.ACTION_SCREEN_OFF)) {
-                        registerReceiver(screenHandler, this)
-                    }
-                }
-
-                mediaProjection?.registerCallback(mediaProjectionCallback, Handler())
-                mediaRecorder.start()
-                state = RecordingState.Recording
-            }
+            mediaProjection?.registerCallback(mediaProjectionCallback, Handler())
+            mediaRecorder.start()
+            state = RecordingState.Recording
         }
     }
 
@@ -179,7 +185,7 @@ class RecorderService : Service() {
         }
         _virtualDisplay?.release()
         destroyMediaProjection()
-        state = RecordingState.IdleOrFinished
+        state = RecordingState.Idle
         stopForeground(true)
     }
 

@@ -1,7 +1,7 @@
 package dev.bmcreations.scrcast.recorder
 
 interface OnRecordingStateChange {
-    fun onStateChange(recording: Boolean)
+    fun onStateChange(state: RecordingState)
 }
 
-internal typealias RecordingStateChangeCallback = (Boolean) -> Unit
+internal typealias RecordingStateChangeCallback = (RecordingState) -> Unit

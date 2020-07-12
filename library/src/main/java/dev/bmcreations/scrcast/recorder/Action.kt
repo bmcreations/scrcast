@@ -1,5 +1,5 @@
 package dev.bmcreations.scrcast.recorder
 
-enum class Action {
-    Stop
+sealed class Action(val name: String) {
+    object Stop : Action(ACTION_STOP)
 }

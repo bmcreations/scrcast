@@ -24,6 +24,7 @@ import dev.bmcreations.dispatcher.ActivityResult
 import dev.bmcreations.scrcast.config.Options
 import dev.bmcreations.scrcast.config.OptionsBuilder
 import dev.bmcreations.scrcast.recorder.*
+import dev.bmcreations.scrcast.recorder.RecordingState.*
 import dev.bmcreations.scrcast.recorder.RecordingStateChangeCallback
 import dev.bmcreations.scrcast.recorder.service.RecorderService
 import dev.bmcreations.scrcast.request.MediaProjectionRequest
@@ -35,16 +36,21 @@ import java.io.File
  */
 class ScrCast private constructor(private val activity: Activity) {
 
-    var isRecording = false
-        private set(value) {
+    var state: RecordingState = Idle
+        set(value) {
+            val was = field
             field = value
             onStateChange?.invoke(value)
-            if (!value) {
+            if (was == Recording && value == Idle) {
                 try {
                     broadcaster.unregisterReceiver(recordingStateHandler)
                 } catch (swallow: Exception) { }
             }
         }
+
+    val isRecording: Boolean get() = state == Recording
+    val isIdle: Boolean get() = state == Idle
+    val isInStartDelay: Boolean get() = state is Delay
 
     private var onStateChange: RecordingStateChangeCallback? = null
 
@@ -62,9 +68,12 @@ class ScrCast private constructor(private val activity: Activity) {
         override fun onReceive(p0: Context?, p1: Intent?) {
             p1?.action?.let { action ->
                 when(action) {
-                    RecordingState.Recording.name -> isRecording = true
-                    RecordingState.IdleOrFinished.name -> isRecording = false
-                    Action.Stop.name -> stopRecording()
+                    STATE_RECORDING -> state = Recording
+                    STATE_IDLE -> state = Idle
+                    STATE_DELAY -> {
+                        state = Delay(p1.extras?.getInt(EXTRA_DELAY_REMAINING) ?: 0)
+                    }
+                    ACTION_STOP -> stopRecording()
                 }
             }
         }
@@ -160,7 +169,7 @@ class ScrCast private constructor(private val activity: Activity) {
     }
 
     @JvmSynthetic
-    fun setOnStateChangeListener(callback: (Boolean) -> Unit) {
+    fun setOnStateChangeListener(callback: (RecordingState) -> Unit) {
         onStateChange = callback
     }
 
@@ -178,7 +187,7 @@ class ScrCast private constructor(private val activity: Activity) {
      *
      */
     fun record() {
-        if (!isRecording) {
+        if (state == Idle) {
             Dexter.withContext(activity)
                 .withPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE)
                 .withListener(CompositeMultiplePermissionsListener(permissionListener, dialogPermissionListener))
@@ -212,9 +221,10 @@ class ScrCast private constructor(private val activity: Activity) {
         broadcaster.registerReceiver(
             recordingStateHandler,
             IntentFilter().apply {
-                addAction(RecordingState.IdleOrFinished.name)
-                addAction(RecordingState.Recording.name)
-                addAction(Action.Stop.name)
+                addAction(STATE_IDLE)
+                addAction(STATE_RECORDING)
+                addAction(STATE_DELAY)
+                addAction(ACTION_STOP)
             }
         )
 
