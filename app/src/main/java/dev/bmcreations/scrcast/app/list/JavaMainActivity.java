@@ -102,7 +102,7 @@ public class JavaMainActivity extends AppCompatActivity {
 
     private void bindViews() {
         fab.setOnClickListener(v -> {
-            if (recorder.isRecording()) {
+            if (recorder.getState().isRecording()) {
                 recorder.stopRecording();
             } else {
                 recorder.record();

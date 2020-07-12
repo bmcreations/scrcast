@@ -38,6 +38,7 @@ dependencies {
 
     implementation deps.kotlin.stdlib
     implementation deps.jetpack.corektx
+    implementation deps.jetpack.constraintlayout
     implementation deps.jetpack.appcompat
     implementation deps.jetpack.material
 }

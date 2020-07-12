@@ -23,6 +23,7 @@ import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import dev.bmcreations.dispatcher.ActivityResult
 import dev.bmcreations.scrcast.config.Options
 import dev.bmcreations.scrcast.config.OptionsBuilder
+import dev.bmcreations.scrcast.extensions.supportsPauseResume
 import dev.bmcreations.scrcast.recorder.*
 import dev.bmcreations.scrcast.recorder.RecordingState.*
 import dev.bmcreations.scrcast.recorder.RecordingStateChangeCallback
@@ -48,10 +49,6 @@ class ScrCast private constructor(private val activity: Activity) {
             }
         }
 
-    val isRecording: Boolean get() = state == Recording
-    val isIdle: Boolean get() = state == Idle
-    val isInStartDelay: Boolean get() = state is Delay
-
     private var onStateChange: RecordingStateChangeCallback? = null
 
     private val metrics by lazy {
@@ -73,6 +70,8 @@ class ScrCast private constructor(private val activity: Activity) {
                     STATE_DELAY -> {
                         state = Delay(p1.extras?.getInt(EXTRA_DELAY_REMAINING) ?: 0)
                     }
+                    ACTION_PAUSE -> pause()
+                    ACTION_RESUME -> resume()
                     ACTION_STOP -> stopRecording()
                 }
             }
@@ -144,6 +143,26 @@ class ScrCast private constructor(private val activity: Activity) {
         })
     }
 
+    fun pause() {
+        if (supportsPauseResume) {
+            if (state.isRecording) {
+                broadcaster.sendBroadcast(Intent(Paused.action))
+                state = Paused
+            }
+        }
+    }
+
+    fun resume() {
+        if (supportsPauseResume) {
+            if (state.isPaused) {
+                broadcaster.sendBroadcast(Intent(Recording.action))
+                state = Recording
+            } else {
+                record()
+            }
+        }
+    }
+
     @JvmSynthetic
     fun options(opts: OptionsBuilder.() -> Unit) {
         options = handleDynamicVideoSize(OptionsBuilder().apply(opts).build())
@@ -187,13 +206,16 @@ class ScrCast private constructor(private val activity: Activity) {
      *
      */
     fun record() {
-        if (state == Idle) {
-            Dexter.withContext(activity)
-                .withPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE)
-                .withListener(CompositeMultiplePermissionsListener(permissionListener, dialogPermissionListener))
-                .check()
-        } else {
-            stopRecording()
+        when (state) {
+            Idle -> {
+                Dexter.withContext(activity)
+                    .withPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE)
+                    .withListener(CompositeMultiplePermissionsListener(permissionListener, dialogPermissionListener))
+                    .check()
+            }
+            Paused -> resume()
+            Recording -> stopRecording()
+            is Delay -> { /* Prevent erroneous calls to record while in start delay */}
         }
     }
 
@@ -223,6 +245,7 @@ class ScrCast private constructor(private val activity: Activity) {
             IntentFilter().apply {
                 addAction(STATE_IDLE)
                 addAction(STATE_RECORDING)
+                addAction(STATE_PAUSED)
                 addAction(STATE_DELAY)
                 addAction(ACTION_STOP)
             }
