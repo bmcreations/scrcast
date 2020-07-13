@@ -75,6 +75,7 @@ public class JavaMainActivity extends AppCompatActivity {
                 101,
                 true,
                 true,
+                true,
                 channelConfig
         );
 

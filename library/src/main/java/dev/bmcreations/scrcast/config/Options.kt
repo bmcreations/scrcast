@@ -51,6 +51,7 @@ data class NotificationConfig @JvmOverloads constructor(
     val icon: Bitmap? = null,
     val id: Int = 101,
     val showStop: Boolean = false,
+    val showPause: Boolean = false,
     val showTimer: Boolean = false,
     val channel: ChannelConfig = ChannelConfig()
 ): Parcelable

@@ -33,6 +33,7 @@ class MainActivity : AppCompatActivity() {
                         name = "Recording Service"
                     }
                     showStop = true
+                    showPause = true
                     showTimer = true
                 }
                 moveTaskToBack = false

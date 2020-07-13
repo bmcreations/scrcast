@@ -70,9 +70,8 @@ class ScrCast private constructor(private val activity: Activity) {
                     STATE_DELAY -> {
                         state = Delay(p1.extras?.getInt(EXTRA_DELAY_REMAINING) ?: 0)
                     }
-                    ACTION_PAUSE -> pause()
-                    ACTION_RESUME -> resume()
-                    ACTION_STOP -> stopRecording()
+                    STATE_PAUSED -> state = Paused
+                    ACTION_STOP -> scanForOutputFile()
                 }
             }
         }
@@ -143,26 +142,6 @@ class ScrCast private constructor(private val activity: Activity) {
         })
     }
 
-    fun pause() {
-        if (supportsPauseResume) {
-            if (state.isRecording) {
-                broadcaster.sendBroadcast(Intent(Action.Pause.name))
-                state = Paused
-            }
-        }
-    }
-
-    fun resume() {
-        if (supportsPauseResume) {
-            if (state.isPaused) {
-                broadcaster.sendBroadcast(Intent(Action.Resume.name))
-                state = Recording
-            } else {
-                record()
-            }
-        }
-    }
-
     @JvmSynthetic
     fun options(opts: OptionsBuilder.() -> Unit) {
         options = handleDynamicVideoSize(OptionsBuilder().apply(opts).build())
@@ -220,12 +199,31 @@ class ScrCast private constructor(private val activity: Activity) {
     }
 
     fun stopRecording() {
-        val service = Intent(activity, RecorderService::class.java)
-        activity.stopService(service)
+        broadcaster.sendBroadcast(Intent(Action.Stop.name))
+    }
 
+    fun pause() {
+        if (supportsPauseResume) {
+            if (state.isRecording) {
+                broadcaster.sendBroadcast(Intent(Action.Pause.name))
+            }
+        }
+    }
+
+    fun resume() {
+        if (supportsPauseResume) {
+            if (state.isPaused) {
+                broadcaster.sendBroadcast(Intent(Action.Resume.name))
+            } else {
+                record()
+            }
+        }
+    }
+
+    private fun scanForOutputFile() {
         MediaScannerConnection.scanFile(activity, arrayOf(outputFile.toString()), null) { path, uri ->
-            Log.i("External", "scanned: $path")
-            Log.i("External", "-> uri=$uri")
+            Log.i("scrcast", "scanned: $path")
+            Log.i("scrcast", "-> uri=$uri")
             _outputFile = null
         }
     }

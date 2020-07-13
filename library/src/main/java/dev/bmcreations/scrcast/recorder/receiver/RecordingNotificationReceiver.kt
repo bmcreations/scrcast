@@ -4,6 +4,9 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import dev.bmcreations.scrcast.recorder.ACTION_PAUSE
+import dev.bmcreations.scrcast.recorder.ACTION_RESUME
+import dev.bmcreations.scrcast.recorder.ACTION_STOP
 import dev.bmcreations.scrcast.recorder.Action
 
 class RecordingNotificationReceiver : BroadcastReceiver() {
@@ -13,8 +16,13 @@ class RecordingNotificationReceiver : BroadcastReceiver() {
             val broadcaster = LocalBroadcastManager.getInstance(ctx)
 
             intent?.action?.let { action ->
-                if (action == Action.Stop.name) {
-                    broadcaster.sendBroadcast(Intent(Action.Stop.name))
+                when (action) {
+                    ACTION_STOP,
+                    ACTION_PAUSE,
+                    ACTION_RESUME -> {
+                        broadcaster.sendBroadcast(Intent(action))
+                    }
+                    else -> {}
                 }
             }
         }

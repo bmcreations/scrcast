@@ -62,6 +62,7 @@ class NotificationConfigBuilder {
     var icon: Bitmap? = defaultConfig.icon
     var id: Int = defaultConfig.id
     var showStop: Boolean = defaultConfig.showStop
+    var showPause: Boolean = defaultConfig.showPause
     var showTimer: Boolean = defaultConfig.showTimer
     private var channel: ChannelConfig = ChannelConfig()
 
@@ -69,7 +70,7 @@ class NotificationConfigBuilder {
         channel = ChannelConfigBuilder().apply(config).build()
     }
 
-    fun build() = NotificationConfig(title, description, icon, id, showStop, showTimer, channel)
+    fun build() = NotificationConfig(title, description, icon, id, showStop, showPause, showTimer, channel)
 }
 
 
