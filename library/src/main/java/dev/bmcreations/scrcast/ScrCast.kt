@@ -49,6 +49,10 @@ class ScrCast private constructor(private val activity: Activity) {
             }
         }
 
+    val isRecording: Boolean get() = state == Recording
+    val isIdle: Boolean get() = state == Idle
+    val isInStartDelay: Boolean get() = state is Delay
+
     private var onStateChange: RecordingStateChangeCallback? = null
 
     private val metrics by lazy {
