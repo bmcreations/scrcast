@@ -8,6 +8,7 @@ import android.content.Intent
 import android.graphics.drawable.Icon
 import android.os.Build
 import dev.bmcreations.scrcast.config.Options
+import dev.bmcreations.scrcast.extensions.supportsPauseResume
 import dev.bmcreations.scrcast.recorder.Action
 import dev.bmcreations.scrcast.recorder.RecordingState
 import dev.bmcreations.scrcast.recorder.receiver.RecordingNotificationReceiver
@@ -85,26 +86,28 @@ class RecorderNotification(private val context: Context, private val options: Op
                 }
 
                 if (showPause) {
-                    with(if (state.isPaused) Action.Resume else Action.Pause) {
-                        val actionIntent = Intent(
-                            context,
-                            RecordingNotificationReceiver::class.java
-                        ).apply {
-                            action = name
-                        }
+                    if (supportsPauseResume) {
+                        with(if (state.isPaused) Action.Resume else Action.Pause) {
+                            val actionIntent = Intent(
+                                context,
+                                RecordingNotificationReceiver::class.java
+                            ).apply {
+                                action = name
+                            }
 
-                        val actionPendingIntent: PendingIntent =
-                            PendingIntent.getBroadcast(
-                                context, requestId, actionIntent, PendingIntent.FLAG_ONE_SHOT
+                            val actionPendingIntent: PendingIntent =
+                                PendingIntent.getBroadcast(
+                                    context, requestId, actionIntent, PendingIntent.FLAG_ONE_SHOT
+                                )
+
+                            addAction(
+                                Notification.Action.Builder(
+                                    Icon.createWithResource(context, icon),
+                                    context.getString(label),
+                                    actionPendingIntent
+                                ).build()
                             )
-
-                        addAction(
-                            Notification.Action.Builder(
-                                Icon.createWithResource(context, icon),
-                                context.getString(label),
-                                actionPendingIntent
-                            ).build()
-                        )
+                        }
                     }
                 }
 
