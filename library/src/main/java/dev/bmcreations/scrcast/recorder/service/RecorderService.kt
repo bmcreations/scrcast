@@ -22,11 +22,11 @@ import dev.bmcreations.scrcast.R
 import dev.bmcreations.scrcast.config.Options
 import dev.bmcreations.scrcast.config.orientations
 import dev.bmcreations.scrcast.extensions.countdown
-import dev.bmcreations.scrcast.recorder.Action
-import dev.bmcreations.scrcast.recorder.EXTRA_DELAY_REMAINING
-import dev.bmcreations.scrcast.recorder.RecordingState
+import dev.bmcreations.scrcast.recorder.*
+import dev.bmcreations.scrcast.recorder.notification.RecorderNotification
 import dev.bmcreations.scrcast.recorder.receiver.RecordingNotificationReceiver
 import kotlinx.coroutines.*
+import java.lang.Exception
 
 
 class RecorderService : Service() {
@@ -35,18 +35,29 @@ class RecorderService : Service() {
         getSystemService(MediaProjectionManager::class.java)
     }
 
-    private val notificationManager by lazy {
-        getSystemService(NotificationManager::class.java)
-    }
-
     private val broadcaster = LocalBroadcastManager.getInstance(this)
 
-    private var screenHandler = object : BroadcastReceiver() {
+    private val recorderNotification by lazy {
+        RecorderNotification(this, options)
+    }
+
+    private val pauseResumeHandler = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action == Intent.ACTION_SCREEN_OFF) {
-                Log.d("scrcast", "stopping recording with screen off per request")
-                if (state == RecordingState.Recording) {
-                    stopRecording()
+            when (intent?.action) {
+                ACTION_PAUSE -> pause()
+                ACTION_RESUME -> resume()
+                ACTION_STOP -> stopRecording()
+            }
+        }
+    }
+    private val screenHandler = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            when (intent?.action) {
+                Intent.ACTION_SCREEN_OFF -> {
+                    Log.d("scrcast", "stopping recording with screen off per request")
+                    if (state == RecordingState.Recording) {
+                        stopRecording()
+                    }
                 }
             }
         }
@@ -68,8 +79,10 @@ class RecorderService : Service() {
     private val orientation by lazy {
         orientations.get(rotation + 90)
     }
-
     private var dpi: Float = 0f
+
+    private var requestCode: Int = -1
+    private var requestData: Intent = Intent()
 
     private var mediaProjection: MediaProjection? = null
     private var mediaProjectionCallback = MediaProjectionCallback()
@@ -130,25 +143,33 @@ class RecorderService : Service() {
         }
     }
 
-    private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val notificationChannel = with(options.notification.channel) {
-                NotificationChannel(
-                    id,
-                    name,
-                    NotificationManager.IMPORTANCE_NONE
-                ).apply {
-                    lightColor = Color.BLUE
-                    lockscreenVisibility = Notification.VISIBILITY_PRIVATE
-                }
+    private fun pause() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            if (state.isRecording) {
+                mediaRecorder.pause()
             }
-
-            notificationManager.createNotificationChannel(notificationChannel)
+            state = RecordingState.Paused
+            recorderNotification.update(state)
         }
     }
 
+    private fun resume() {
+        when (state) {
+            RecordingState.Idle -> startRecording()
+            RecordingState.Paused -> {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    mediaRecorder.resume()
+                    state = RecordingState.Recording
+                    recorderNotification.update(state)
+                }
+            }
+        }
+    }
 
-    private fun startRecording(code: Int, data: Intent) {
+    private fun startRecording(code: Int = requestCode, data: Intent = requestData) {
+        requestCode = code
+        requestData = data
+
         if (options.startDelayMs > 0) {
             options.startDelayMs.countdown(
                 repeatMillis = 1_000,
@@ -162,7 +183,7 @@ class RecorderService : Service() {
 
     private fun recordInternal(code: Int, data: Intent) {
         GlobalScope.launch(Dispatchers.Main) {
-            startForeground(options.notification.id, setupNotification())
+            startForeground(options.notification.id, recorderNotification.createFrom(state))
             mediaProjection = projectionManager.getMediaProjection(code, data)
 
             virtualDisplay // touch
@@ -171,6 +192,13 @@ class RecorderService : Service() {
                 with(IntentFilter(Intent.ACTION_SCREEN_OFF)) {
                     registerReceiver(screenHandler, this)
                 }
+            }
+
+            with(IntentFilter(ACTION_PAUSE).apply {
+                addAction(ACTION_RESUME)
+                addAction(ACTION_STOP)
+            }) {
+                broadcaster.registerReceiver(pauseResumeHandler, this)
             }
 
             mediaProjection?.registerCallback(mediaProjectionCallback, Handler())
@@ -210,8 +238,6 @@ class RecorderService : Service() {
             dpi = it.getFloatExtra("dpi", 0f)
             outputFile = it.getStringExtra("outputFile") ?: ""
 
-            createNotificationChannel()
-
             startRecording(
                 code = it.getIntExtra("code", -1),
                 data = it.getParcelableExtra("data") ?: Intent()
@@ -226,56 +252,12 @@ class RecorderService : Service() {
         if (options.stopOnScreenOff) {
             unregisterReceiver(screenHandler)
         }
+        try {
+            broadcaster.unregisterReceiver(pauseResumeHandler)
+        } catch (swallow: Exception) {}
+
         super.onDestroy()
     }
 
     override fun onBind(p0: Intent?): IBinder? = null
-
-    private fun setupNotification(): Notification {
-        return with(options.notification) {
-            val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                Notification.Builder(this@RecorderService, options.notification.channel.id)
-            } else {
-                Notification.Builder(this@RecorderService)
-            }
-
-            builder.apply {
-                setOngoing(true)
-
-                if (icon != null) {
-                    setSmallIcon(Icon.createWithBitmap(icon))
-                } else {
-                    setSmallIcon(android.R.drawable.ic_dialog_alert)
-                }
-
-                setContentTitle(title)
-                setContentText(description)
-
-                if (showTimer) {
-                    setWhen(System.currentTimeMillis())
-                    setUsesChronometer(true)
-                }
-
-                if (showStop) {
-                    val stopIntent = Intent(
-                        this@RecorderService,
-                        RecordingNotificationReceiver::class.java
-                    ).apply {
-                        action = Action.Stop.name
-                    }
-                    val stopPendingIntent: PendingIntent =
-                        PendingIntent.getBroadcast(
-                            this@RecorderService, 0, stopIntent, 0
-                        )
-
-                    addAction(Notification.Action.Builder(
-                        Icon.createWithResource(this@RecorderService, R.drawable.ic_stop),
-                        this@RecorderService.getString(R.string.stop),
-                        stopPendingIntent).build()
-                    )
-                }
-            }
-            builder.build()
-        }
-    }
 }

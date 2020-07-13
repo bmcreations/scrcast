@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="pause">Pause</string>
+    <string name="resume">Resume</string>
     <string name="stop">Stop</string>
 </resources>

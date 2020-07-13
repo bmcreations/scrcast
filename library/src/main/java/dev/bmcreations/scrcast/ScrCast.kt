@@ -23,6 +23,7 @@ import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import dev.bmcreations.dispatcher.ActivityResult
 import dev.bmcreations.scrcast.config.Options
 import dev.bmcreations.scrcast.config.OptionsBuilder
+import dev.bmcreations.scrcast.extensions.supportsPauseResume
 import dev.bmcreations.scrcast.recorder.*
 import dev.bmcreations.scrcast.recorder.RecordingState.*
 import dev.bmcreations.scrcast.recorder.RecordingStateChangeCallback
@@ -73,7 +74,8 @@ class ScrCast private constructor(private val activity: Activity) {
                     STATE_DELAY -> {
                         state = Delay(p1.extras?.getInt(EXTRA_DELAY_REMAINING) ?: 0)
                     }
-                    ACTION_STOP -> stopRecording()
+                    STATE_PAUSED -> state = Paused
+                    ACTION_STOP -> scanForOutputFile()
                 }
             }
         }
@@ -187,23 +189,45 @@ class ScrCast private constructor(private val activity: Activity) {
      *
      */
     fun record() {
-        if (state == Idle) {
-            Dexter.withContext(activity)
-                .withPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE)
-                .withListener(CompositeMultiplePermissionsListener(permissionListener, dialogPermissionListener))
-                .check()
-        } else {
-            stopRecording()
+        when (state) {
+            Idle -> {
+                Dexter.withContext(activity)
+                    .withPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE)
+                    .withListener(CompositeMultiplePermissionsListener(permissionListener, dialogPermissionListener))
+                    .check()
+            }
+            Paused -> resume()
+            Recording -> stopRecording()
+            is Delay -> { /* Prevent erroneous calls to record while in start delay */}
         }
     }
 
     fun stopRecording() {
-        val service = Intent(activity, RecorderService::class.java)
-        activity.stopService(service)
+        broadcaster.sendBroadcast(Intent(Action.Stop.name))
+    }
 
+    fun pause() {
+        if (supportsPauseResume) {
+            if (state.isRecording) {
+                broadcaster.sendBroadcast(Intent(Action.Pause.name))
+            }
+        }
+    }
+
+    fun resume() {
+        if (supportsPauseResume) {
+            if (state.isPaused) {
+                broadcaster.sendBroadcast(Intent(Action.Resume.name))
+            } else {
+                record()
+            }
+        }
+    }
+
+    private fun scanForOutputFile() {
         MediaScannerConnection.scanFile(activity, arrayOf(outputFile.toString()), null) { path, uri ->
-            Log.i("External", "scanned: $path")
-            Log.i("External", "-> uri=$uri")
+            Log.i("scrcast", "scanned: $path")
+            Log.i("scrcast", "-> uri=$uri")
             _outputFile = null
         }
     }
@@ -223,6 +247,7 @@ class ScrCast private constructor(private val activity: Activity) {
             IntentFilter().apply {
                 addAction(STATE_IDLE)
                 addAction(STATE_RECORDING)
+                addAction(STATE_PAUSED)
                 addAction(STATE_DELAY)
                 addAction(ACTION_STOP)
             }
