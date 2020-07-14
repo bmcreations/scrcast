@@ -13,13 +13,7 @@ import dev.bmcreations.scrcast.recorder.Action
 import dev.bmcreations.scrcast.recorder.RecordingState
 import dev.bmcreations.scrcast.recorder.receiver.RecordingNotificationReceiver
 
-class RecorderNotification(private val context: Context, private val options: Options) {
-
-    private val notificationManager by lazy {
-        context.getSystemService(NotificationManager::class.java)
-    }
-
-    private var notification: Notification? = null
+class RecorderNotificationProvider(private val context: Context, private val options: Options): NotificationProvider(context) {
 
     init {
         createNotificationChannel()
@@ -28,7 +22,7 @@ class RecorderNotification(private val context: Context, private val options: Op
     private var startTime: Long = 0
     private var elapsedTime: Long = 0
 
-    private fun createNotificationChannel() {
+    override fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val notificationChannel = with(options.notification.channel) {
                 android.app.NotificationChannel(
@@ -45,10 +39,12 @@ class RecorderNotification(private val context: Context, private val options: Op
         }
     }
 
-    fun createFrom(state: RecordingState): Notification {
-        notification = with(options.notification) {
+    override fun getChannelId(): String = options.notification.channel.id
+
+    override fun get(state: RecordingState): Notification {
+        return with(options.notification) {
             val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                Notification.Builder(context, options.notification.channel.id)
+                Notification.Builder(context, channel.id)
             } else {
                 Notification.Builder(context)
             }
@@ -136,13 +132,14 @@ class RecorderNotification(private val context: Context, private val options: Op
             }
             builder.build()
         }
-        return notification!!
     }
 
-    fun update(state: RecordingState) {
+    override fun getNotificationId(): Int = options.notification.id
+
+    override fun update(state: RecordingState) {
         if (state.isPaused) {
             elapsedTime += System.currentTimeMillis() - startTime
         }
-        notificationManager.notify(options.notification.id, createFrom(state))
+        super.update(state)
     }
 }
