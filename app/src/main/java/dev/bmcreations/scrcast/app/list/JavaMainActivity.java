@@ -1,7 +1,6 @@
 package dev.bmcreations.scrcast.app.list;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -21,14 +20,9 @@ import dev.bmcreations.scrcast.app.R;
 import dev.bmcreations.scrcast.config.ChannelConfig;
 import dev.bmcreations.scrcast.config.NotificationConfig;
 import dev.bmcreations.scrcast.config.Options;
-import dev.bmcreations.scrcast.config.OptionsBuilder;
 import dev.bmcreations.scrcast.config.StorageConfig;
 import dev.bmcreations.scrcast.config.VideoConfig;
-import dev.bmcreations.scrcast.config.VideoConfigBuilder;
-import dev.bmcreations.scrcast.recorder.OnRecordingStateChange;
 import dev.bmcreations.scrcast.recorder.RecordingState;
-import kotlin.Unit;
-import kotlin.jvm.functions.Function1;
 
 public class JavaMainActivity extends AppCompatActivity {
 
