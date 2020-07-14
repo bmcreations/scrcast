@@ -2,13 +2,11 @@ package dev.bmcreations.scrcast
 
 import android.Manifest
 import android.app.Activity
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.content.*
 import android.content.pm.PackageManager
 import android.media.MediaScannerConnection
 import android.media.projection.MediaProjectionManager
+import android.os.IBinder
 import android.util.DisplayMetrics
 import android.util.Log
 import androidx.core.app.ActivityCompat
@@ -27,6 +25,8 @@ import dev.bmcreations.scrcast.extensions.supportsPauseResume
 import dev.bmcreations.scrcast.recorder.*
 import dev.bmcreations.scrcast.recorder.RecordingState.*
 import dev.bmcreations.scrcast.recorder.RecordingStateChangeCallback
+import dev.bmcreations.scrcast.recorder.notification.NotificationProvider
+import dev.bmcreations.scrcast.recorder.notification.RecorderNotificationProvider
 import dev.bmcreations.scrcast.recorder.service.RecorderService
 import dev.bmcreations.scrcast.request.MediaProjectionRequest
 import dev.bmcreations.scrcast.request.MediaProjectionResult
@@ -53,6 +53,11 @@ class ScrCast private constructor(private val activity: Activity) {
     val isIdle: Boolean get() = state == Idle
     val isInStartDelay: Boolean get() = state is Delay
 
+    private val defaultNotificationProvider by lazy {
+        RecorderNotificationProvider(activity, options)
+    }
+    private var notificationProvider: NotificationProvider? = null
+
     private var onStateChange: RecordingStateChangeCallback? = null
 
     private val metrics by lazy {
@@ -62,6 +67,8 @@ class ScrCast private constructor(private val activity: Activity) {
     private val dpi by lazy { metrics.density }
 
     private var options = Options()
+
+    private var serviceBinder: RecorderService? = null
 
     private val broadcaster = LocalBroadcastManager.getInstance(activity)
 
@@ -75,7 +82,10 @@ class ScrCast private constructor(private val activity: Activity) {
                         state = Delay(p1.extras?.getInt(EXTRA_DELAY_REMAINING) ?: 0)
                     }
                     STATE_PAUSED -> state = Paused
-                    ACTION_STOP -> scanForOutputFile()
+                    ACTION_STOP -> {
+                        activity.unbindService(connection)
+                        scanForOutputFile()
+                    }
                 }
             }
         }
@@ -185,6 +195,10 @@ class ScrCast private constructor(private val activity: Activity) {
         return perms.all { ActivityCompat.checkSelfPermission(activity, it) == PackageManager.PERMISSION_GRANTED }
     }
 
+    fun setNotificationProvider(provider: NotificationProvider) {
+        notificationProvider = provider
+    }
+
     /**
      *
      */
@@ -253,7 +267,24 @@ class ScrCast private constructor(private val activity: Activity) {
             }
         )
 
+        activity.bindService(service, connection, Context.BIND_AUTO_CREATE)
         activity.startService(service)
+
+    }
+
+    /** Defines callbacks for service binding, passed to bindService()  */
+    private val connection = object : ServiceConnection {
+
+        override fun onServiceConnected(className: ComponentName, service: IBinder) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            val binder = service as RecorderService.LocalBinder
+            serviceBinder = binder.service
+            serviceBinder?.setNotificationProvider(notificationProvider ?: defaultNotificationProvider)
+        }
+
+        override fun onServiceDisconnected(arg0: ComponentName) {
+            serviceBinder = null
+        }
     }
 
     private val dialogPermissionListener: DialogOnAnyDeniedMultiplePermissionsListener = DialogOnAnyDeniedMultiplePermissionsListener.Builder

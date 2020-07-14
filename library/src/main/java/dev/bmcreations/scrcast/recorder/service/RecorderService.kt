@@ -22,7 +22,6 @@ import dev.bmcreations.scrcast.config.orientations
 import dev.bmcreations.scrcast.extensions.countdown
 import dev.bmcreations.scrcast.recorder.*
 import dev.bmcreations.scrcast.recorder.notification.NotificationProvider
-import dev.bmcreations.scrcast.recorder.notification.RecorderNotificationProvider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -36,9 +35,9 @@ class RecorderService : Service() {
 
     private val broadcaster = LocalBroadcastManager.getInstance(this)
 
-    private val notificationProvider: NotificationProvider by lazy {
-        RecorderNotificationProvider(this, options)
-    }
+    private val binder = LocalBinder()
+
+    private lateinit var notificationProvider: NotificationProvider
 
     private val pauseResumeHandler = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -143,6 +142,10 @@ class RecorderService : Service() {
             setOrientationHint(orientation)
         }
         mediaRecorder?.prepare()
+    }
+
+    fun setNotificationProvider(provider: NotificationProvider) {
+        notificationProvider = provider
     }
 
     private fun pause() {
@@ -264,5 +267,12 @@ class RecorderService : Service() {
         super.onDestroy()
     }
 
-    override fun onBind(p0: Intent?): IBinder? = null
+    override fun onBind(p0: Intent?): IBinder? = binder
+
+    // Class used for the client Binder.
+    inner class LocalBinder : Binder() {
+        // Return this instance of MyService so clients can call public methods
+        val service: RecorderService
+            get() = this@RecorderService
+    }
 }
