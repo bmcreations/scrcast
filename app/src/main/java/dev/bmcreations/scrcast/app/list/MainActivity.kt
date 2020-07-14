@@ -41,6 +41,11 @@ class MainActivity : AppCompatActivity() {
                 startDelayMs = 5_000
             }
 
+            // ScrCast supports running your own notifications completely
+            // simply provide a NotificationProvider
+            //
+            //setNotificationProvider(SimpleNotificationProvider(this@MainActivity))
+
             setOnStateChangeListener { state -> handleRecorderState(state) }
         }
     }
