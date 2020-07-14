@@ -18,11 +18,11 @@ class OptionsBuilder {
         video = VideoConfigBuilder().apply(config).build()
     }
 
-    fun OptionsBuilder.storage(config: StorageConfigBuilder.() -> Unit) {
+    fun storage(config: StorageConfigBuilder.() -> Unit) {
         storage = StorageConfigBuilder().apply(config).build()
     }
 
-    fun OptionsBuilder.notification(config: NotificationConfigBuilder.() -> Unit) {
+    fun notification(config: NotificationConfigBuilder.() -> Unit) {
         notification = NotificationConfigBuilder().apply(config).build()
     }
 
@@ -72,7 +72,6 @@ class NotificationConfigBuilder {
 
     fun build() = NotificationConfig(title, description, icon, id, showStop, showPause, showTimer, channel)
 }
-
 
 class ChannelConfigBuilder {
     private val defaultConfig = ChannelConfig()

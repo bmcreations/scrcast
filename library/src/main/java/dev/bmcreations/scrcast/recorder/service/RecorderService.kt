@@ -1,32 +1,31 @@
 package dev.bmcreations.scrcast.recorder.service
 
-import android.app.*
+import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.graphics.Color
-import android.graphics.drawable.Icon
 import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
 import android.media.MediaRecorder
 import android.media.MediaRecorder.*
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
+import android.os.Binder
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.util.Log
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import dev.bmcreations.scrcast.R
 import dev.bmcreations.scrcast.config.Options
 import dev.bmcreations.scrcast.config.orientations
 import dev.bmcreations.scrcast.extensions.countdown
 import dev.bmcreations.scrcast.recorder.*
-import dev.bmcreations.scrcast.recorder.notification.RecorderNotification
-import dev.bmcreations.scrcast.recorder.receiver.RecordingNotificationReceiver
-import kotlinx.coroutines.*
-import java.lang.Exception
+import dev.bmcreations.scrcast.recorder.notification.NotificationProvider
+import dev.bmcreations.scrcast.recorder.notification.RecorderNotificationProvider
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 
 class RecorderService : Service() {
@@ -37,8 +36,8 @@ class RecorderService : Service() {
 
     private val broadcaster = LocalBroadcastManager.getInstance(this)
 
-    private val recorderNotification by lazy {
-        RecorderNotification(this, options)
+    private val notificationProvider: NotificationProvider by lazy {
+        RecorderNotificationProvider(this, options)
     }
 
     private val pauseResumeHandler = object : BroadcastReceiver() {
@@ -97,7 +96,7 @@ class RecorderService : Service() {
                     options.video.height,
                     dpi.toInt(),
                     DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
-                    mediaRecorder.surface,
+                    mediaRecorder?.surface,
                     null,
                     null
                 )
@@ -105,8 +104,11 @@ class RecorderService : Service() {
             return _virtualDisplay
         }
 
-    private val mediaRecorder: MediaRecorder by lazy {
-        MediaRecorder().apply {
+    private var mediaRecorder: MediaRecorder? = null
+
+    private fun createRecorder() {
+        mediaRecorder?.reset()
+        mediaRecorder = MediaRecorder().apply {
             setVideoSource(VideoSource.SURFACE)
             setOutputFormat(options.storage.outputFormat)
             setOutputFile(outputFile)
@@ -139,17 +141,18 @@ class RecorderService : Service() {
                 }
             }
             setOrientationHint(orientation)
-            prepare()
         }
+        mediaRecorder?.prepare()
     }
 
     private fun pause() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             if (state.isRecording) {
-                mediaRecorder.pause()
+                mediaRecorder?.pause()
             }
             state = RecordingState.Paused
-            recorderNotification.update(state)
+
+            notificationProvider.update(state)
         }
     }
 
@@ -158,9 +161,9 @@ class RecorderService : Service() {
             RecordingState.Idle -> startRecording()
             RecordingState.Paused -> {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    mediaRecorder.resume()
+                    mediaRecorder?.resume()
                     state = RecordingState.Recording
-                    recorderNotification.update(state)
+                    notificationProvider.update(state)
                 }
             }
         }
@@ -183,7 +186,7 @@ class RecorderService : Service() {
 
     private fun recordInternal(code: Int, data: Intent) {
         GlobalScope.launch(Dispatchers.Main) {
-            startForeground(options.notification.id, recorderNotification.createFrom(state))
+            startForeground(notificationProvider.getNotificationId(), notificationProvider.get(state))
             mediaProjection = projectionManager.getMediaProjection(code, data)
 
             virtualDisplay // touch
@@ -202,8 +205,10 @@ class RecorderService : Service() {
             }
 
             mediaProjection?.registerCallback(mediaProjectionCallback, Handler())
-            mediaRecorder.start()
+            createRecorder()
+            mediaRecorder?.start()
             state = RecordingState.Recording
+            notificationProvider.update(state)
         }
     }
 
@@ -225,8 +230,8 @@ class RecorderService : Service() {
 
     private inner class MediaProjectionCallback : MediaProjection.Callback() {
         override fun onStop() {
-            mediaRecorder.stop()
-            mediaRecorder.reset()
+            mediaRecorder?.stop()
+            mediaRecorder?.reset()
             stopRecording()
         }
     }
