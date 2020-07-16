@@ -46,6 +46,9 @@ class ScrCast private constructor(private val activity: Activity) {
                 try {
                     broadcaster.unregisterReceiver(recordingStateHandler)
                 } catch (swallow: Exception) { }
+
+                activity.unbindService(connection)
+                scanForOutputFile()
             }
         }
 
@@ -82,10 +85,6 @@ class ScrCast private constructor(private val activity: Activity) {
                         state = Delay(p1.extras?.getInt(EXTRA_DELAY_REMAINING) ?: 0)
                     }
                     STATE_PAUSED -> state = Paused
-                    ACTION_STOP -> {
-                        activity.unbindService(connection)
-                        scanForOutputFile()
-                    }
                 }
             }
         }
@@ -263,7 +262,6 @@ class ScrCast private constructor(private val activity: Activity) {
                 addAction(STATE_RECORDING)
                 addAction(STATE_PAUSED)
                 addAction(STATE_DELAY)
-                addAction(ACTION_STOP)
             }
         )
 
