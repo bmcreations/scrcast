@@ -3,6 +3,7 @@ package dev.bmcreations.scrcast.app.list
 
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.view.isVisible
@@ -91,7 +92,12 @@ class MainActivity : AppCompatActivity() {
                 pause_fab.setIconResource(R.drawable.ic_pause)
                 pause_fab.text = "Pause"
             }
-            RecordingState.Idle -> fab.isExpanded = false
+            is RecordingState.Idle -> {
+                fab.isExpanded = false
+                if (state.error != null) {
+                    Toast.makeText(this, "Unable to start recording", Toast.LENGTH_SHORT).show()
+                }
+            }
             RecordingState.Paused -> {
                 pause_fab.setIconResource(R.drawable.ic_resume)
                 pause_fab.text = "Resume"

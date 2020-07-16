@@ -37,12 +37,12 @@ import java.io.File
  */
 class ScrCast private constructor(private val activity: Activity) {
 
-    var state: RecordingState = Idle
+    var state: RecordingState = Idle()
         set(value) {
             val was = field
             field = value
             onStateChange?.invoke(value)
-            if (was == Recording && value == Idle) {
+            if (was == Recording && value is Idle) {
                 try {
                     broadcaster.unregisterReceiver(recordingStateHandler)
                 } catch (swallow: Exception) { }
@@ -53,7 +53,7 @@ class ScrCast private constructor(private val activity: Activity) {
         }
 
     val isRecording: Boolean get() = state == Recording
-    val isIdle: Boolean get() = state == Idle
+    val isIdle: Boolean get() = state is Idle
     val isInStartDelay: Boolean get() = state is Delay
 
     private val defaultNotificationProvider by lazy {
@@ -82,7 +82,7 @@ class ScrCast private constructor(private val activity: Activity) {
             p1?.action?.let { action ->
                 when(action) {
                     STATE_RECORDING -> state = Recording
-                    STATE_IDLE -> state = Idle
+                    STATE_IDLE -> state = Idle(p1.extras?.get(EXTRA_ERROR) as? Throwable)
                     STATE_DELAY -> {
                         state = Delay(p1.extras?.getInt(EXTRA_DELAY_REMAINING) ?: 0)
                     }
@@ -205,7 +205,7 @@ class ScrCast private constructor(private val activity: Activity) {
      */
     fun record() {
         when (state) {
-            Idle -> {
+            is Idle -> {
                 Dexter.withContext(activity)
                     .withPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE)
                     .withListener(CompositeMultiplePermissionsListener(permissionListener, dialogPermissionListener))

@@ -38,7 +38,7 @@ data class StorageConfig @JvmOverloads constructor(
     val directoryName: String = "scrcast",
     val directory: File = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES),
     val fileNameFormatter: String = SimpleDateFormat("MM_dd_yyyy_hhmmss", Locale.getDefault()).format(Date()),
-    val outputFormat: Int = MediaRecorder.OutputFormat.MPEG_4,
+    val outputFormat: Int = MediaRecorder.OutputFormat.MPEG_2_TS,
     val maxSizeMB: Float = 0f
 ): Parcelable {
     val mediaStorageLocation = File(directory, directoryName)

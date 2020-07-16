@@ -63,7 +63,7 @@ class RecorderNotificationProvider(private val context: Context, private val opt
 
                 if (showTimer) {
                     when (state) {
-                        RecordingState.Idle,
+                        is RecordingState.Idle,
                         is RecordingState.Delay -> {
                             startTime = System.currentTimeMillis()
                             setWhen(startTime)

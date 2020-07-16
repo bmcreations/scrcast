@@ -63,12 +63,14 @@ class RecorderService : Service() {
         }
     }
 
-    private var state: RecordingState = RecordingState.Idle
+    private var state: RecordingState = RecordingState.Idle()
     set(value) {
         field = value
         broadcaster.sendBroadcast(Intent(value.action).apply {
             if (value is RecordingState.Delay) {
                 putExtra(EXTRA_DELAY_REMAINING, value.remainingSeconds)
+            } else if (value is RecordingState.Idle) {
+                putExtra(EXTRA_ERROR, value.error)
             }
         })
     }
@@ -163,7 +165,7 @@ class RecorderService : Service() {
 
     private fun resume() {
         when (state) {
-            RecordingState.Idle -> startRecording()
+            is RecordingState.Idle -> startRecording()
             RecordingState.Paused -> {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                     mediaRecorder?.resume()
@@ -211,19 +213,23 @@ class RecorderService : Service() {
 
             mediaProjection?.registerCallback(mediaProjectionCallback, Handler())
             createRecorder()
-            mediaRecorder?.start()
-            state = RecordingState.Recording
-            notificationProvider.update(state)
+            try {
+                mediaRecorder?.start()
+                state = RecordingState.Recording
+                notificationProvider.update(state)
+            } catch (e: Exception) {
+                stopRecording(e)
+            }
         }
     }
 
-    private fun stopRecording() {
+    private fun stopRecording(error: Throwable? = null) {
         if (_virtualDisplay == null) {
             return
         }
         _virtualDisplay?.release()
         destroyMediaProjection()
-        state = RecordingState.Idle
+        state = RecordingState.Idle(error)
         stopForeground(true)
     }
 

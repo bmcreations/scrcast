@@ -26,7 +26,7 @@ class SimpleNotificationProvider(private val context: Context) : NotificationPro
             setContentTitle("scrcast-sample")
             setContentText(when (state) {
                 RecordingState.Recording -> "state=recording"
-                RecordingState.Idle -> "state=idle"
+                is RecordingState.Idle -> "state=idle"
                 RecordingState.Paused -> "state=paused"
                 is RecordingState.Delay -> "state=delay"
             })

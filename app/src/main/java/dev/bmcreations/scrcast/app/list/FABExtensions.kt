@@ -31,7 +31,7 @@ private fun FloatingActionButton.animateColorChange(@ColorInt fromColor: Int, @C
 }
 
 fun FloatingActionButton.reflectState(state: RecordingState) {
-    if (state == Recording || state == Idle) {
+    if (state == Recording || state is Idle) {
         val isRecording = state == Recording
         setImageResource(if (isRecording) R.drawable.ic_stop else R.drawable.ic_camcorder)
         animateColorChange(
