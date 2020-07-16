@@ -73,7 +73,9 @@ class ScrCast private constructor(private val activity: Activity) {
 
     private var serviceBinder: RecorderService? = null
 
-    private val broadcaster = LocalBroadcastManager.getInstance(activity)
+    private val broadcaster by lazy {
+        LocalBroadcastManager.getInstance(activity)
+    }
 
     private val recordingStateHandler = object : BroadcastReceiver() {
         override fun onReceive(p0: Context?, p1: Intent?) {

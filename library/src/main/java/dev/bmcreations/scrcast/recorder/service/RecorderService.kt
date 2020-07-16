@@ -33,7 +33,9 @@ class RecorderService : Service() {
         getSystemService(MediaProjectionManager::class.java)
     }
 
-    private val broadcaster = LocalBroadcastManager.getInstance(this)
+    private val broadcaster by lazy {
+        LocalBroadcastManager.getInstance(this)
+    }
 
     private val binder = LocalBinder()
 
