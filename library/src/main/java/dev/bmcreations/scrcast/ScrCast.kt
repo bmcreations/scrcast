@@ -113,7 +113,7 @@ class ScrCast private constructor(private val activity: Activity) {
         get() {
             if (_outputFile == null) {
                 outputDirectory?.let { dir ->
-                    _outputFile = File("${dir.path}${File.separator}${options.storage.fileNameFormatter}.mp4")
+                    _outputFile = File("${dir.path}${File.separator}${options.storage.fileNameFormatter()}.mp4")
                 } ?: return null
             }
             return _outputFile

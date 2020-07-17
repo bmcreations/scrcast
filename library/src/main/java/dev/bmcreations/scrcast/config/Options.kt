@@ -9,9 +9,12 @@ import android.os.Environment
 import android.os.Parcelable
 import android.util.DisplayMetrics
 import kotlinx.android.parcel.Parcelize
+import kotlinx.android.parcel.RawValue
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
+
+typealias FileFormatter = () -> String
 
 @Parcelize
 data class Options @JvmOverloads constructor(
@@ -37,8 +40,8 @@ data class VideoConfig @JvmOverloads constructor(
 data class StorageConfig @JvmOverloads constructor(
     val directoryName: String = "scrcast",
     val directory: File = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES),
-    val fileNameFormatter: String = SimpleDateFormat("MM_dd_yyyy_hhmmss", Locale.getDefault()).format(Date()),
-    val outputFormat: Int = MediaRecorder.OutputFormat.MPEG_2_TS,
+    val fileNameFormatter: @RawValue FileFormatter = { SimpleDateFormat("MM_dd_yyyy_hhmmss", Locale.getDefault()).format(Date()) },
+    val outputFormat: Int = MediaRecorder.OutputFormat.MPEG_4,
     val maxSizeMB: Float = 0f
 ): Parcelable {
     val mediaStorageLocation = File(directory, directoryName)

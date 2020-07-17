@@ -46,7 +46,7 @@ class StorageConfigBuilder {
 
     var directoryName: String = defaultConfig.directoryName
     var directory: File = defaultConfig.directory
-    var fileNameFormatter: String = defaultConfig.fileNameFormatter
+    var fileNameFormatter: FileFormatter = defaultConfig.fileNameFormatter
     var outputFormat: Int = defaultConfig.outputFormat
     var maxSizeMB: Float = defaultConfig.maxSizeMB
 
