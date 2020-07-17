@@ -196,8 +196,6 @@ class RecorderService : Service() {
             startForeground(notificationProvider.getNotificationId(), notificationProvider.get(state))
             mediaProjection = projectionManager.getMediaProjection(code, data)
 
-            virtualDisplay // touch
-
             if (options.stopOnScreenOff) {
                 with(IntentFilter(Intent.ACTION_SCREEN_OFF)) {
                     registerReceiver(screenHandler, this)
@@ -213,6 +211,7 @@ class RecorderService : Service() {
 
             mediaProjection?.registerCallback(mediaProjectionCallback, Handler())
             createRecorder()
+            virtualDisplay // touch
             try {
                 mediaRecorder?.start()
                 state = RecordingState.Recording
