@@ -1,6 +1,7 @@
 apply from: "$rootProject.projectDir/android-library.gradle"
 
 apply plugin: "org.jetbrains.dokka"
+apply plugin: "com.vanniktech.maven.publish"
 
 android {
     defaultConfig {
