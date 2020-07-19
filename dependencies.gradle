@@ -17,9 +17,10 @@ versions.plugin_build_tools = '4.2.0-alpha02'
 versions.plugin_google_services = "4.3.0"
 versions.plugin_fabric = '1.+'
 versions.plugin_firebase = '1.2.0'
-versions.kotlin = '1.3.71'
+versions.kotlin = '1.3.72'
 versions.kotlinx_coroutines = '1.3.5'
 versions.plugin_androidx_navigation_safe_args = '2.2.0-rc03'
+versions.plugin_dokka = '0.10.1'
 
 versions.android_ktx = '1.3.0-beta01'
 versions.androidx_lifecycle = '2.2.0'
@@ -60,6 +61,7 @@ plugins.fabric = "io.fabric.tools:gradle:$versions.plugin_fabric"
 plugins.kotlin = "org.jetbrains.kotlin:kotlin-gradle-plugin:$versions.kotlin"
 plugins.androidx_navigation_safe_args = "androidx.navigation:navigation-safe-args-gradle-plugin:$versions.plugin_androidx_navigation_safe_args"
 plugins.versions = "com.github.ben-manes:gradle-versions-plugin:0.17.0"
+plugins.dokka = "org.jetbrains.dokka:dokka-gradle-plugin:$versions.plugin_dokka"
 deps.plugins = plugins
 
 def jetpack = [:]

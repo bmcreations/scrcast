@@ -1,9 +1,6 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     apply from: 'dependencies.gradle'
-    ext {
-        versions.kotlin = '1.3.71'
-    }
 
     repositories {
         google()
@@ -15,7 +12,7 @@ buildscript {
         classpath deps.plugins.kotlin
         classpath deps.plugins.versions
         classpath deps.plugins.maven_gradle
-        classpath("org.jetbrains.dokka:dokka-gradle-plugin:0.10.1")
+        classpath deps.plugins.dokka
     }
 }
 
