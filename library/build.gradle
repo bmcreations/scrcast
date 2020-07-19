@@ -1,10 +1,31 @@
 apply from: "$rootProject.projectDir/android-library.gradle"
 
+apply plugin: "org.jetbrains.dokka"
 
 android {
     defaultConfig {
         versionCode 1
         versionName "1.0"
+    }
+}
+
+afterEvaluate {
+    dokka {
+        outputDirectory = "$rootDir/docs/api"
+        outputFormat = "gfm"
+        configuration {
+            includeNonPublic = false
+            reportUndocumented = true
+            jdkVersion = 8
+            skipDeprecated = true
+            skipEmptyPackages = true
+
+            // suppress internal operations from logging to API docs
+            perPackageOption {
+                prefix = "dev.bmcreations.scrcast.internal"
+                suppress = true
+            }
+        }
     }
 }
 
