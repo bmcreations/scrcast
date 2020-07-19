@@ -1,4 +1,4 @@
-package dev.bmcreations.scrcast.extensions
+package dev.bmcreations.scrcast.internal.extensions
 
 import android.os.CountDownTimer
 

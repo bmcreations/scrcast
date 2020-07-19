@@ -1,4 +1,4 @@
-package dev.bmcreations.scrcast.recorder.service
+package dev.bmcreations.scrcast.internal.recorder.service
 
 import android.app.Service
 import android.content.BroadcastReceiver
@@ -16,17 +16,18 @@ import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.util.Log
+import androidx.annotation.RestrictTo
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import dev.bmcreations.scrcast.config.Options
-import dev.bmcreations.scrcast.config.orientations
-import dev.bmcreations.scrcast.extensions.countdown
+import dev.bmcreations.scrcast.internal.extensions.countdown
+import dev.bmcreations.scrcast.internal.recorder.*
 import dev.bmcreations.scrcast.recorder.*
 import dev.bmcreations.scrcast.recorder.notification.NotificationProvider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
-
+@RestrictTo(RestrictTo.Scope.LIBRARY)
 class RecorderService : Service() {
 
     private val projectionManager: MediaProjectionManager by lazy {
@@ -66,7 +67,7 @@ class RecorderService : Service() {
     private var state: RecordingState = RecordingState.Idle()
     set(value) {
         field = value
-        broadcaster.sendBroadcast(Intent(value.action).apply {
+        broadcaster.sendBroadcast(Intent(value.stateString()).apply {
             if (value is RecordingState.Delay) {
                 putExtra(EXTRA_DELAY_REMAINING, value.remainingSeconds)
             } else if (value is RecordingState.Idle) {

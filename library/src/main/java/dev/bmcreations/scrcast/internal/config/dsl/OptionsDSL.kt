@@ -1,11 +1,13 @@
 @file:Suppress("MemberVisibilityCanBePrivate")
 
-package dev.bmcreations.scrcast.config
+package dev.bmcreations.scrcast.internal.config.dsl
 
 import android.graphics.Bitmap
-import android.util.DisplayMetrics
+import androidx.annotation.RestrictTo
+import dev.bmcreations.scrcast.config.*
 import java.io.File
 
+@RestrictTo(RestrictTo.Scope.LIBRARY)
 class OptionsBuilder {
     private var video = VideoConfig()
     private var storage = StorageConfig()
@@ -23,10 +25,19 @@ class OptionsBuilder {
     }
 
     fun notification(config: NotificationConfigBuilder.() -> Unit) {
-        notification = NotificationConfigBuilder().apply(config).build()
+        notification = NotificationConfigBuilder()
+            .apply(config).build()
     }
 
-    fun build(): Options = Options(video, storage, notification, moveTaskToBack, startDelayMs, stopOnScreenOff)
+    fun build(): Options =
+        Options(
+            video,
+            storage,
+            notification,
+            moveTaskToBack,
+            startDelayMs,
+            stopOnScreenOff
+        )
 }
 
 class VideoConfigBuilder {
@@ -38,7 +49,15 @@ class VideoConfigBuilder {
     var frameRate: Int = defaultConfig.frameRate
     var maxLengthSecs: Int = defaultConfig.maxLengthSecs
 
-    fun build(): VideoConfig = VideoConfig(width, height, videoEncoder, bitrate, frameRate, maxLengthSecs)
+    fun build(): VideoConfig =
+        VideoConfig(
+            width,
+            height,
+            videoEncoder,
+            bitrate,
+            frameRate,
+            maxLengthSecs
+        )
 }
 
 class StorageConfigBuilder {
@@ -50,12 +69,20 @@ class StorageConfigBuilder {
     var outputFormat: Int = defaultConfig.outputFormat
     var maxSizeMB: Float = defaultConfig.maxSizeMB
 
-    fun build(): StorageConfig = StorageConfig(directoryName, directory, fileNameFormatter, outputFormat, maxSizeMB)
+    fun build(): StorageConfig =
+        StorageConfig(
+            directoryName,
+            directory,
+            fileNameFormatter,
+            outputFormat,
+            maxSizeMB
+        )
 }
 
 
 class NotificationConfigBuilder {
-    private val defaultConfig = NotificationConfig()
+    private val defaultConfig =
+        NotificationConfig()
 
     var title: String = defaultConfig.title
     var description: String = defaultConfig.description
@@ -64,13 +91,23 @@ class NotificationConfigBuilder {
     var showStop: Boolean = defaultConfig.showStop
     var showPause: Boolean = defaultConfig.showPause
     var showTimer: Boolean = defaultConfig.showTimer
-    private var channel: ChannelConfig = ChannelConfig()
+    private var channel: ChannelConfig =
+        ChannelConfig()
 
     fun channel(config: ChannelConfigBuilder.() -> Unit) {
         channel = ChannelConfigBuilder().apply(config).build()
     }
 
-    fun build() = NotificationConfig(title, description, icon, id, showStop, showPause, showTimer, channel)
+    fun build() = NotificationConfig(
+        title,
+        description,
+        icon,
+        id,
+        showStop,
+        showPause,
+        showTimer,
+        channel
+    )
 }
 
 class ChannelConfigBuilder {
@@ -81,5 +118,10 @@ class ChannelConfigBuilder {
     var lightColor: Int = defaultConfig.lightColor
     var lockscreenVisibility: Int = defaultConfig.lockscreenVisibility
 
-    fun build() = ChannelConfig(id, name, lightColor, lockscreenVisibility)
+    fun build() = ChannelConfig(
+        id,
+        name,
+        lightColor,
+        lockscreenVisibility
+    )
 }

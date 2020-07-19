@@ -4,8 +4,10 @@ import android.Manifest
 import android.app.Activity
 import android.content.*
 import android.content.pm.PackageManager
+import android.media.MediaRecorder
 import android.media.MediaScannerConnection
 import android.media.projection.MediaProjectionManager
+import android.os.Build
 import android.os.IBinder
 import android.util.DisplayMetrics
 import android.util.Log
@@ -20,25 +22,31 @@ import com.karumi.dexter.listener.multi.DialogOnAnyDeniedMultiplePermissionsList
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import dev.bmcreations.dispatcher.ActivityResult
 import dev.bmcreations.scrcast.config.Options
-import dev.bmcreations.scrcast.config.OptionsBuilder
+import dev.bmcreations.scrcast.internal.config.dsl.OptionsBuilder
 import dev.bmcreations.scrcast.extensions.supportsPauseResume
+import dev.bmcreations.scrcast.internal.recorder.Action
 import dev.bmcreations.scrcast.recorder.*
 import dev.bmcreations.scrcast.recorder.RecordingState.*
 import dev.bmcreations.scrcast.recorder.RecordingStateChangeCallback
 import dev.bmcreations.scrcast.recorder.notification.NotificationProvider
-import dev.bmcreations.scrcast.recorder.notification.RecorderNotificationProvider
-import dev.bmcreations.scrcast.recorder.service.RecorderService
-import dev.bmcreations.scrcast.request.MediaProjectionRequest
-import dev.bmcreations.scrcast.request.MediaProjectionResult
+import dev.bmcreations.scrcast.internal.recorder.notification.RecorderNotificationProvider
+import dev.bmcreations.scrcast.internal.recorder.service.RecorderService
+import dev.bmcreations.scrcast.internal.request.MediaProjectionRequest
+import dev.bmcreations.scrcast.internal.request.MediaProjectionResult
 import java.io.File
 
 /**
- * Main Interface for accessing [scrcast] Library
+ * Main Interface for accessing [ScrCast] Library
  */
 class ScrCast private constructor(private val activity: Activity) {
 
+    /**
+     * The current [RecordingState] of the recorder
+     *
+     * @see [RecordingState]
+     */
     var state: RecordingState = Idle()
-        set(value) {
+        private set(value) {
             val was = field
             field = value
             onStateChange?.invoke(value)
@@ -52,12 +60,34 @@ class ScrCast private constructor(private val activity: Activity) {
             }
         }
 
-    val isRecording: Boolean get() = state == Recording
-    val isIdle: Boolean get() = state is Idle
-    val isInStartDelay: Boolean get() = state is Delay
+    /** Defines callbacks for service binding, passed to bindService()  */
+    private val connection = object : ServiceConnection {
+
+        override fun onServiceConnected(className: ComponentName, service: IBinder) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            val binder = service as RecorderService.LocalBinder
+            serviceBinder = binder.service
+            serviceBinder?.setNotificationProvider(notificationProvider ?: defaultNotificationProvider)
+        }
+
+        override fun onServiceDisconnected(arg0: ComponentName) {
+            serviceBinder = null
+        }
+    }
+
+    private val dialogPermissionListener: DialogOnAnyDeniedMultiplePermissionsListener = DialogOnAnyDeniedMultiplePermissionsListener.Builder
+        .withContext(activity)
+        .withTitle("Storage permissions")
+        .withMessage("Storage permissions are needed to store the screen recording")
+        .withButtonText(android.R.string.ok)
+        .withIcon(R.drawable.ic_storage_permission_dialog)
+        .build()
 
     private val defaultNotificationProvider by lazy {
-        RecorderNotificationProvider(activity, options)
+        RecorderNotificationProvider(
+            activity,
+            options
+        )
     }
     private var notificationProvider: NotificationProvider? = null
 
@@ -92,9 +122,7 @@ class ScrCast private constructor(private val activity: Activity) {
         }
     }
 
-    private var _outputFile: File? = null
-
-    val outputDirectory: File?
+    private val outputDirectory: File?
         get() {
             val mediaStorageDir = options.storage.mediaStorageLocation
             mediaStorageDir.apply {
@@ -109,6 +137,7 @@ class ScrCast private constructor(private val activity: Activity) {
             return mediaStorageDir
         }
 
+    private var _outputFile: File? = null
     private val outputFile: File?
         get() {
             if (_outputFile == null) {
@@ -137,6 +166,146 @@ class ScrCast private constructor(private val activity: Activity) {
         }
     }
 
+    /**
+     * Updates the configurations of [ScrCast] via a DSL.
+     *
+     * @see [Options]
+     *
+     * This method is not accessible to the JVM.
+     */
+    @JvmSynthetic
+    fun options(opts: OptionsBuilder.() -> Unit) {
+        options = handleDynamicVideoSize(OptionsBuilder().apply(opts).build())
+    }
+    /**
+     * Updates the configurations of [ScrCast].
+     *
+     * @see [Options]
+     */
+    fun updateOptions(options: Options) {
+        this.options = handleDynamicVideoSize(options)
+    }
+
+    /**
+     * Set the state change listener emitting changes of [RecordingState] as they occur.
+     */
+    fun setOnStateChangeListener(listener : OnRecordingStateChange) {
+        onStateChange = { listener.onStateChange(it) }
+    }
+
+    /**
+     * Set the state change listener, as a kotlin lambda, emitting changes of [RecordingState] as they occur.
+     *
+     * This method is not accessible to the JVM.
+     */
+    @JvmSynthetic
+    fun setOnStateChangeListener(callback: (RecordingState) -> Unit) {
+        onStateChange = callback
+    }
+
+    /**
+     * Convenience method for clients to easily check if the required permissions are enabled for storage
+     * Even though we internally will bubble up the permission request and handle the allow/deny,
+     * some clients may want to onboard users via an OOBE or some UX state involving previously recorded files.
+     */
+    fun hasStoragePermissions(): Boolean {
+        val perms = listOf(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE)
+        return perms.all { ActivityCompat.checkSelfPermission(activity, it) == PackageManager.PERMISSION_GRANTED }
+    }
+
+    /**
+     * Set the [NotificationProvider] for the [ScrCast] instance.
+     *
+     * @see [NotificationProvider]
+     */
+    fun setNotificationProvider(provider: NotificationProvider) {
+        notificationProvider = provider
+    }
+
+    /**
+     * Triggers a recording session based on the configuration's defined by [options]
+     *
+     * @see [updateOptions]
+     * @see [Options]
+     * @see [MediaRecorder.start]
+     */
+    fun record() {
+        when (state) {
+            is Idle -> {
+                Dexter.withContext(activity)
+                    .withPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE)
+                    .withListener(CompositeMultiplePermissionsListener(permissionListener, dialogPermissionListener))
+                    .check()
+            }
+            Paused -> resume()
+            Recording -> stopRecording()
+            is Delay -> { /* Prevent erroneous calls to record while in start delay */}
+        }
+    }
+
+    /**
+     * Triggers the end to a recording session that was started via [record]
+     *
+     * @see [MediaRecorder.stop]
+     */
+    fun stopRecording() {
+        broadcaster.sendBroadcast(Intent(Action.Stop.name))
+    }
+
+    /**
+     * Pauses a recording session that was started via [record]
+     *
+     * This only invokes a change to the recording state if the target device
+     * is [Build.VERSION_CODES.N] or higher.
+     *
+     * @see [MediaRecorder.pause]
+     */
+    fun pause() {
+        if (supportsPauseResume) {
+            if (state.isRecording) {
+                broadcaster.sendBroadcast(Intent(Action.Pause.name))
+            }
+        }
+    }
+
+    /**
+     * Resumed a recording session that was paused via [pause], or triggers a new recording
+     * if the [state] is not paused.
+     *
+     * * This only invokes a change to the recording state if the target device
+     * is [Build.VERSION_CODES.N] or higher.
+     *
+     * @see [MediaRecorder.resume]
+     */
+    fun resume() {
+        if (supportsPauseResume) {
+            if (state.isPaused) {
+                broadcaster.sendBroadcast(Intent(Action.Resume.name))
+            } else {
+                record()
+            }
+        }
+    }
+
+    private fun handleDynamicVideoSize(options: Options): Options {
+        var reconfig: Options = options
+        if (options.video.width == -1) {
+            reconfig = reconfig.copy(video = reconfig.video.copy(width = metrics.widthPixels))
+        }
+        if (options.video.height == -1) {
+            reconfig = reconfig.copy(video = reconfig.video.copy(height = metrics.heightPixels))
+        }
+        return reconfig
+    }
+
+    private fun scanForOutputFile() {
+        MediaScannerConnection.scanFile(activity, arrayOf(outputFile.toString()), null) { path, uri ->
+            Log.i("scrcast", "scanned: $path")
+            Log.i("scrcast", "-> uri=$uri")
+            _outputFile = null
+        }
+    }
+
     private fun startRecording() {
         MediaProjectionRequest(
             activity,
@@ -155,96 +324,6 @@ class ScrCast private constructor(private val activity: Activity) {
                 }
             }
         })
-    }
-
-    @JvmSynthetic
-    fun options(opts: OptionsBuilder.() -> Unit) {
-        options = handleDynamicVideoSize(OptionsBuilder().apply(opts).build())
-    }
-
-    fun updateOptions(options: Options) {
-        this.options = handleDynamicVideoSize(options)
-    }
-
-    private fun handleDynamicVideoSize(options: Options): Options {
-        var reconfig: Options = options
-        if (options.video.width == -1) {
-            reconfig = reconfig.copy(video = reconfig.video.copy(width = metrics.widthPixels))
-        }
-        if (options.video.height == -1) {
-            reconfig = reconfig.copy(video = reconfig.video.copy(height = metrics.heightPixels))
-        }
-        return reconfig
-    }
-
-    fun setOnStateChangeListener(listener : OnRecordingStateChange) {
-        onStateChange = { listener.onStateChange(it) }
-    }
-
-    @JvmSynthetic
-    fun setOnStateChangeListener(callback: (RecordingState) -> Unit) {
-        onStateChange = callback
-    }
-
-    /**
-     * Convenience method for clients to easily check if the required permissions are enabled for storage
-     * Even though we internally will bubble up the permission request and handle the allow/deny,
-     * some clients may want to onboard users via an OOBE or some UX state involving previously recorded files.
-     */
-    fun hasStoragePermissions(): Boolean {
-        val perms = listOf(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE)
-        return perms.all { ActivityCompat.checkSelfPermission(activity, it) == PackageManager.PERMISSION_GRANTED }
-    }
-
-    fun setNotificationProvider(provider: NotificationProvider) {
-        notificationProvider = provider
-    }
-
-    /**
-     *
-     */
-    fun record() {
-        when (state) {
-            is Idle -> {
-                Dexter.withContext(activity)
-                    .withPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE)
-                    .withListener(CompositeMultiplePermissionsListener(permissionListener, dialogPermissionListener))
-                    .check()
-            }
-            Paused -> resume()
-            Recording -> stopRecording()
-            is Delay -> { /* Prevent erroneous calls to record while in start delay */}
-        }
-    }
-
-    fun stopRecording() {
-        broadcaster.sendBroadcast(Intent(Action.Stop.name))
-    }
-
-    fun pause() {
-        if (supportsPauseResume) {
-            if (state.isRecording) {
-                broadcaster.sendBroadcast(Intent(Action.Pause.name))
-            }
-        }
-    }
-
-    fun resume() {
-        if (supportsPauseResume) {
-            if (state.isPaused) {
-                broadcaster.sendBroadcast(Intent(Action.Resume.name))
-            } else {
-                record()
-            }
-        }
-    }
-
-    private fun scanForOutputFile() {
-        MediaScannerConnection.scanFile(activity, arrayOf(outputFile.toString()), null) { path, uri ->
-            Log.i("scrcast", "scanned: $path")
-            Log.i("scrcast", "-> uri=$uri")
-            _outputFile = null
-        }
     }
 
     private fun startService(result: ActivityResult, file : File) {
@@ -269,33 +348,17 @@ class ScrCast private constructor(private val activity: Activity) {
 
         activity.bindService(service, connection, Context.BIND_AUTO_CREATE)
         activity.startService(service)
-
     }
-
-    /** Defines callbacks for service binding, passed to bindService()  */
-    private val connection = object : ServiceConnection {
-
-        override fun onServiceConnected(className: ComponentName, service: IBinder) {
-            // We've bound to LocalService, cast the IBinder and get LocalService instance
-            val binder = service as RecorderService.LocalBinder
-            serviceBinder = binder.service
-            serviceBinder?.setNotificationProvider(notificationProvider ?: defaultNotificationProvider)
-        }
-
-        override fun onServiceDisconnected(arg0: ComponentName) {
-            serviceBinder = null
-        }
-    }
-
-    private val dialogPermissionListener: DialogOnAnyDeniedMultiplePermissionsListener = DialogOnAnyDeniedMultiplePermissionsListener.Builder
-        .withContext(activity)
-        .withTitle("Storage permissions")
-        .withMessage("Storage permissions are needed to store the screen recording")
-        .withButtonText(android.R.string.ok)
-        .withIcon(R.drawable.ic_storage_permission_dialog)
-        .build()
 
     companion object {
+        /**
+         * Instance creator for [ScrCast].
+         *
+         * Requires an [Activity] reference for media projection creation, as well
+         * as auto video-sizing in [Options].
+         *
+         * @see [Options.video]
+         */
         @JvmStatic
         fun use(activity: Activity): ScrCast {
             return ScrCast(activity)

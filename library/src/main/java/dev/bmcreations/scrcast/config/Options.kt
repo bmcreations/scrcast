@@ -1,5 +1,3 @@
-@file:Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
-
 package dev.bmcreations.scrcast.config
 
 import android.app.Notification
@@ -14,7 +12,7 @@ import android.os.Parcelable
 import android.util.DisplayMetrics
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.parcel.RawValue
-import kotlin.jvm.functions.Function0
+import kotlin.jvm.functions.FunctionN
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -24,6 +22,9 @@ import dev.bmcreations.scrcast.recorder.RecordingState
 import dev.bmcreations.scrcast.recorder.OnRecordingStateChange
 import kotlinx.android.parcel.IgnoredOnParcel
 
+/**
+ * Type alias foe the [StorageConfig.fileNameFormatter] lambda.
+ */
 typealias FileFormatter = () -> String
 
 /**
@@ -48,7 +49,7 @@ data class Options @JvmOverloads constructor(
     /**
      * The time (in milliseconds) to delay the recording after calling [ScrCast.record].
      *
-     * Will emit [RecordingState.Delay] with a countdown from [staertDelayMs] down to zero (in seconds).
+     * Will emit [RecordingState.Delay] with a countdown from [startDelayMs] down to zero (in seconds).
      *
      * @see [RecordingState]
      * @see [OnRecordingStateChange]
@@ -69,7 +70,7 @@ data class VideoConfig @JvmOverloads constructor(
     /**
      * Width of the video recording frame.
      *
-     * A value of [-1] will allow [ScrCast] to query the [DisplayMetrics.widthPixels] from the device for use.
+     * A value of `-1` will allow [ScrCast] to query the [DisplayMetrics.widthPixels] from the device for use.
      *
      * @see [MediaRecorder.setVideoSize]
      */
@@ -77,7 +78,7 @@ data class VideoConfig @JvmOverloads constructor(
     /**
      * Height of the video recording frame.
      *
-     * A value of [-1] will allow [ScrCast] to query the [DisplayMetrics.heightPixels] from the device for use.
+     * A value of `-1` will allow [ScrCast] to query the [DisplayMetrics.heightPixels] from the device for use.
      *
      * @see [MediaRecorder.setVideoSize]
      */
@@ -143,7 +144,7 @@ data class StorageConfig @JvmOverloads constructor(
     val directory: File = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES),
     /**
      * the formatting of the file name for the resulting screen recording. This is done via a higher order lambda
-     * in Kotlin and a [Function0] to ensure the formatter will run for each recording independently of one another.
+     * in Kotlin and a [FunctionN] to ensure the formatter will run for each recording independently of one another.
      *
      * Defaults to the current time in `MM_dd_yyyy_hhmmss` format.
      *
