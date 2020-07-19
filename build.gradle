@@ -15,6 +15,7 @@ buildscript {
         classpath deps.plugins.kotlin
         classpath deps.plugins.versions
         classpath deps.plugins.maven_gradle
+        classpath("org.jetbrains.dokka:dokka-gradle-plugin:0.10.1")
     }
 }
 
@@ -30,4 +31,34 @@ allprojects {
 
 task clean(type: Delete) {
     delete rootProject.buildDir
+}
+
+apply plugin: "org.jetbrains.dokka"
+
+
+afterEvaluate {
+    dokka {
+        configuration {
+            externalDocumentationLink {
+                url = new URL("https://developer.android.com/reference/androidx/")
+                packageListUrl = new URL("https://developer.android.com/reference/androidx/package-list")
+            }
+            externalDocumentationLink {
+                url = new URL("https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-android/")
+                packageListUrl = new URL("https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-android/package-list")
+            }
+            externalDocumentationLink {
+                url = new URL("https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/")
+                packageListUrl = new URL("https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/package-list")
+            }
+            externalDocumentationLink {
+                url = new URL("https://square.github.io/okhttp/3.x/okhttp/")
+                packageListUrl = new URL("https://square.github.io/okhttp/3.x/okhttp/package-list")
+            }
+            externalDocumentationLink {
+                url = new URL("https://square.github.io/okio/2.x/okio/")
+                packageListUrl = new URL("https://square.github.io/okio/2.x/okio/package-list")
+            }
+        }
+    }
 }
