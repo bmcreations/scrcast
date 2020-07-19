@@ -1,0 +1,59 @@
+# Project information
+site_name: 'scrcast'
+site_description: 'Your drop in screen recording solution on Android'
+site_author: 'bmcreations'
+site_url: 'bmcreations.dev'
+remote_branch: gh-pages
+
+# Repository
+repo_name: 'scrcast'
+repo_url: 'https://github.com/bmc08gt/scrcast'
+
+# Copyright
+copyright: 'Copyright &copy; 2020 bmcreations'
+
+# Configuration
+theme:
+  name: 'material'
+  language: 'en'
+  palette:
+    primary: 'white'
+    accent: 'white'
+  font:
+    text: 'Roboto'
+    code: 'Roboto Mono'
+
+# Customization
+extra:
+  social:
+    - type: 'github'
+      link: 'https://github.com/bmc08gt/scrcast'
+    - type: 'twitter'
+      link: 'https://twitter.com/brandonmcansh'
+
+# Navigation
+nav:
+  - 'Overview': getting_started.md
+  - 'API':
+      - 'scrcast': api/scrcast/dev.bmcreations.scrcast/index.md
+
+# CSS
+extra_css:
+  - 'css/site.css'
+
+# Extensions
+markdown_extensions:
+  - admonition
+  - codehilite:
+      guess_lang: false
+  - footnotes
+  - toc:
+      permalink: true
+  - pymdownx.betterem
+  - pymdownx.superfences
+
+# Plugins
+plugins:
+  - search
+  - minify:
+      minify_html: true
