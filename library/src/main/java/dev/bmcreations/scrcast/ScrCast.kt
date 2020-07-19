@@ -24,7 +24,7 @@ import dev.bmcreations.dispatcher.ActivityResult
 import dev.bmcreations.scrcast.config.Options
 import dev.bmcreations.scrcast.internal.config.dsl.OptionsBuilder
 import dev.bmcreations.scrcast.extensions.supportsPauseResume
-import dev.bmcreations.scrcast.internal.recorder.Action
+import dev.bmcreations.scrcast.internal.recorder.*
 import dev.bmcreations.scrcast.recorder.*
 import dev.bmcreations.scrcast.recorder.RecordingState.*
 import dev.bmcreations.scrcast.recorder.RecordingStateChangeCallback
@@ -92,6 +92,7 @@ class ScrCast private constructor(private val activity: Activity) {
     private var notificationProvider: NotificationProvider? = null
 
     private var onStateChange: RecordingStateChangeCallback? = null
+    private var onRecordingOutput: RecordingOutputFileCallback? = null
 
     private val metrics by lazy {
         DisplayMetrics().apply { activity.windowManager.defaultDisplay.getMetrics(this) }
@@ -187,20 +188,37 @@ class ScrCast private constructor(private val activity: Activity) {
     }
 
     /**
-     * Set the state change listener emitting changes of [RecordingState] as they occur.
+     * Set the recording callbacks, emitting changes of [RecordingState] as they occur and a link to the output [File]
      */
-    fun setOnStateChangeListener(listener : OnRecordingStateChange) {
+    fun setRecordingCallback(listener : RecordingCallbacks) {
         onStateChange = { listener.onStateChange(it) }
+        onRecordingOutput = { listener.onRecordingFinished(it) }
     }
 
     /**
-     * Set the state change listener, as a kotlin lambda, emitting changes of [RecordingState] as they occur.
+     * Set an explicit state change listener, as a kotlin lambda, emitting changes of [RecordingState] as they occur.
+     *
+     * This is an alternative to providing the combined [RecordingCallbacks] if you are only interested in state changes or
+     * want to define them independently.
      *
      * This method is not accessible to the JVM.
      */
     @JvmSynthetic
-    fun setOnStateChangeListener(callback: (RecordingState) -> Unit) {
+    fun onRecordingStateChange(callback: RecordingStateChangeCallback) {
         onStateChange = callback
+    }
+
+    /**
+     * Set an explicit output file listener, as a kotlin lambda.
+     *
+     * This is an alternative to providing the combined [RecordingCallbacks] if you are only interested in the output file or
+     * want to define them independently.
+     *
+     * This method is not accessible to the JVM.
+     */
+    @JvmSynthetic
+    fun onRecordingComplete(callback: RecordingOutputFileCallback) {
+        onRecordingOutput = callback
     }
 
     /**
@@ -302,6 +320,9 @@ class ScrCast private constructor(private val activity: Activity) {
         MediaScannerConnection.scanFile(activity, arrayOf(outputFile.toString()), null) { path, uri ->
             Log.i("scrcast", "scanned: $path")
             Log.i("scrcast", "-> uri=$uri")
+            if (uri != null) {
+                onRecordingOutput?.invoke(File(path))
+            }
             _outputFile = null
         }
     }

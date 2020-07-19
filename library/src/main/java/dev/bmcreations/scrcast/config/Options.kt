@@ -19,7 +19,7 @@ import java.util.*
 
 import dev.bmcreations.scrcast.ScrCast
 import dev.bmcreations.scrcast.recorder.RecordingState
-import dev.bmcreations.scrcast.recorder.OnRecordingStateChange
+import dev.bmcreations.scrcast.recorder.RecordingCallbacks
 import kotlinx.android.parcel.IgnoredOnParcel
 
 /**
@@ -52,7 +52,7 @@ data class Options @JvmOverloads constructor(
      * Will emit [RecordingState.Delay] with a countdown from [startDelayMs] down to zero (in seconds).
      *
      * @see [RecordingState]
-     * @see [OnRecordingStateChange]
+     * @see [RecordingCallbacks]
      */
     val startDelayMs: Long = 0,
     /**

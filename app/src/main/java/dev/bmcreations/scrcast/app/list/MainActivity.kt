@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.view.isVisible
+import com.google.android.material.snackbar.Snackbar
 import dev.bmcreations.scrcast.ScrCast
 import dev.bmcreations.scrcast.app.R
 import dev.bmcreations.scrcast.extensions.supportsPauseResume
@@ -47,7 +48,10 @@ class MainActivity : AppCompatActivity() {
             //
             //setNotificationProvider(SimpleNotificationProvider(this@MainActivity))
 
-            setOnStateChangeListener { state -> handleRecorderState(state) }
+            onRecordingStateChange { state -> handleRecorderState(state) }
+            onRecordingComplete { file ->
+                Snackbar.make(bottom_bar, "Recording located at ${file.absolutePath}", Snackbar.LENGTH_SHORT).show()
+            }
         }
     }
 

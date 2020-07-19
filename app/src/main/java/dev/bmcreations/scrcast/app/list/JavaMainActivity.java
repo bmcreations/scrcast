@@ -7,6 +7,7 @@ import android.graphics.drawable.Drawable;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -15,6 +16,10 @@ import androidx.core.content.ContextCompat;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textview.MaterialTextView;
 
+import org.jetbrains.annotations.NotNull;
+
+import java.io.File;
+
 import dev.bmcreations.scrcast.ScrCast;
 import dev.bmcreations.scrcast.app.R;
 import dev.bmcreations.scrcast.config.ChannelConfig;
@@ -22,6 +27,7 @@ import dev.bmcreations.scrcast.config.NotificationConfig;
 import dev.bmcreations.scrcast.config.Options;
 import dev.bmcreations.scrcast.config.StorageConfig;
 import dev.bmcreations.scrcast.config.VideoConfig;
+import dev.bmcreations.scrcast.recorder.RecordingCallbacks;
 import dev.bmcreations.scrcast.recorder.RecordingState;
 
 public class JavaMainActivity extends AppCompatActivity {
@@ -86,11 +92,23 @@ public class JavaMainActivity extends AppCompatActivity {
         recorder.updateOptions(options);
 
         // listen for state changes
-        recorder.setOnStateChangeListener(state -> {
-            FABExtensions.reflectRecorderState(fab, state);
-            startTimer.setVisibility(state instanceof RecordingState.Delay ? View.VISIBLE : View.GONE);
-            if (state instanceof RecordingState.Delay) {
-                startTimer.setText(((RecordingState.Delay) state).getRemainingSeconds());
+        recorder.setRecordingCallback(new RecordingCallbacks() {
+            @Override
+            public void onStateChange(@NotNull RecordingState state) {
+                FABExtensions.reflectRecorderState(fab, state);
+                startTimer.setVisibility(state instanceof RecordingState.Delay ? View.VISIBLE : View.GONE);
+                if (state instanceof RecordingState.Delay) {
+                    startTimer.setText(((RecordingState.Delay) state).getRemainingSeconds());
+                }
+            }
+
+            @Override
+            public void onRecordingFinished(@NotNull File file) {
+                Toast.makeText(
+                        JavaMainActivity.this,
+                        "result file is located at " + file.getAbsolutePath(),
+                        Toast.LENGTH_SHORT
+                ).show();
             }
         });
     }
