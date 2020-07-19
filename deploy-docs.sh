@@ -6,8 +6,10 @@ rm -rf docs/api
 # Build the Dokka docs.
 ./gradlew clean :library:dokka
 
-# TODO
-# Deploy to Github pages or vercel
+# Copy outside files into the docs folder.
+sed -e '/full configuration details and documentation here/ { N; d; }' < README.md > docs/index.md
+
+# Deploy to Github pages.
 mkdocs gh-deploy
 
 # Clean up.

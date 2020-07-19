@@ -20,7 +20,7 @@ scrcast provides a variety of configuration options for capturing, storing, and 
 ### Configuring
 
 ```kotlin
-val recorder = ScrCast.use(this)
+val recorder = ScrCast.use(activity)
 recorder.apply {
     // configure options via DSL
     options {
@@ -47,6 +47,8 @@ recorder.apply {
     }
 }
 ```
+
+You can find [full configuration details and documentation here](https://bmc08gt.github.io/scrcast/getting_started/).
 
 ### State
 

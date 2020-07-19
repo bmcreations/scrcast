@@ -2,7 +2,7 @@
 site_name: 'scrcast'
 site_description: 'Your drop in screen recording solution on Android'
 site_author: 'bmcreations'
-site_url: 'bmcreations.dev'
+site_url: 'https://bmcreations.dev'
 remote_branch: gh-pages
 
 # Repository
@@ -23,19 +23,14 @@ theme:
     text: 'Roboto'
     code: 'Roboto Mono'
 
-# Customization
-extra:
-  social:
-    - type: 'github'
-      link: 'https://github.com/bmc08gt/scrcast'
-    - type: 'twitter'
-      link: 'https://twitter.com/brandonmcansh'
-
 # Navigation
 nav:
-  - 'Overview': getting_started.md
+  - 'Overview': index.md
   - 'API':
-      - 'scrcast': api/scrcast/dev.bmcreations.scrcast/index.md
+      - 'scrcast': api/library/index.md
+      - 'config': api/library/dev.bmcreations.scrcast.config/index.md
+      - 'recorder': api/library/dev.bmcreations.scrcast.recorder/index.md
+      - 'notifications': api/library/dev.bmcreations.scrcast.recorder.notification/index.md
 
 # CSS
 extra_css:
