@@ -13,7 +13,6 @@ buildscript {
         classpath deps.plugins.versions
         classpath deps.plugins.maven_gradle
         classpath deps.plugins.dokka
-        classpath deps.plugins.mavenPublish
     }
 }
 
