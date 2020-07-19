@@ -3,5 +3,9 @@
      <loc>https://bmcreations.dev/getting_started/</loc>
      <lastmod>2020-07-19</lastmod>
      <changefreq>daily</changefreq>
+    </url><url>
+     <loc>https://bmcreations.dev/api/library/dev.bmcreations.scrcast/</loc>
+     <lastmod>2020-07-19</lastmod>
+     <changefreq>daily</changefreq>
     </url>
 </urlset>
