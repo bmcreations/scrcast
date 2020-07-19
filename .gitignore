@@ -16,3 +16,7 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Docs
+docs/api
+site
