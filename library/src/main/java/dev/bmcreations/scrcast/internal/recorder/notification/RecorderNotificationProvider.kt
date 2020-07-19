@@ -1,4 +1,4 @@
-package dev.bmcreations.scrcast.recorder.notification
+package dev.bmcreations.scrcast.internal.recorder.notification
 
 import android.app.Notification
 import android.app.NotificationManager
@@ -7,13 +7,19 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.Icon
 import android.os.Build
+import androidx.annotation.RestrictTo
 import dev.bmcreations.scrcast.config.Options
 import dev.bmcreations.scrcast.extensions.supportsPauseResume
-import dev.bmcreations.scrcast.recorder.Action
+import dev.bmcreations.scrcast.internal.recorder.Action
+import dev.bmcreations.scrcast.internal.recorder.receiver.RecordingNotificationReceiver
 import dev.bmcreations.scrcast.recorder.RecordingState
-import dev.bmcreations.scrcast.recorder.receiver.RecordingNotificationReceiver
+import dev.bmcreations.scrcast.recorder.notification.NotificationProvider
 
-class RecorderNotificationProvider(private val context: Context, private val options: Options): NotificationProvider(context) {
+@RestrictTo(RestrictTo.Scope.LIBRARY)
+class RecorderNotificationProvider(
+    private val context: Context,
+    private val options: Options
+): NotificationProvider(context) {
 
     init {
         createNotificationChannel()

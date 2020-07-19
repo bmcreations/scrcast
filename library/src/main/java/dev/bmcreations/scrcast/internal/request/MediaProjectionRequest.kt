@@ -1,8 +1,9 @@
-package dev.bmcreations.scrcast.request
+package dev.bmcreations.scrcast.internal.request
 
 import android.app.Activity
 import android.content.Context
 import android.media.projection.MediaProjectionManager
+import androidx.annotation.RestrictTo
 import dev.bmcreations.dispatcher.ActivityResult
 import dev.bmcreations.dispatcher.ActivityResultContainer
 import dev.bmcreations.dispatcher.ActivityResultDispatcher
@@ -10,8 +11,10 @@ import dev.bmcreations.dispatcher.ReactiveActivityResult
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.MainScope
 
+@RestrictTo(RestrictTo.Scope.LIBRARY)
 interface MediaProjectionResult : ActivityResultDispatcher<ActivityResult>
 
+@RestrictTo(RestrictTo.Scope.LIBRARY)
 @OptIn(InternalCoroutinesApi::class)
 class MediaProjectionRequest(
     private val context: Context?,
