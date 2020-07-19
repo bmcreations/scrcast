@@ -7,5 +7,13 @@
      <loc>https://bmcreations.dev/api/library/</loc>
      <lastmod>2020-07-19</lastmod>
      <changefreq>daily</changefreq>
+    </url><url>
+     <loc>https://bmcreations.dev/api/library/dev.bmcreations.scrcast.config/</loc>
+     <lastmod>2020-07-19</lastmod>
+     <changefreq>daily</changefreq>
+    </url><url>
+     <loc>https://bmcreations.dev/api/library/dev.bmcreations.scrcast.recorder/</loc>
+     <lastmod>2020-07-19</lastmod>
+     <changefreq>daily</changefreq>
     </url>
 </urlset>
