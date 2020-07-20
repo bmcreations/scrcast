@@ -61,7 +61,7 @@ recorder.apply {
 }
 ```
 
-You can find [full configuration details and documentation here](https://bmc08gt.github.io/scrcast/).
+You can find [full configuration details and documentation here](https://bmcreations.github.io/scrcast/).
 
 ### State
 
