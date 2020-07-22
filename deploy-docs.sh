@@ -8,9 +8,10 @@ rm -rf docs/api
 
 # Copy outside files into the docs folder.
 sed -e '/full configuration details and documentation here/ { N; d; }' < README.md > docs/index.md
+cp readme-header.png docs/images/
 
 # Deploy to Github pages.
 mkdocs gh-deploy
 
 # Clean up.
-rm -rf docs/index.md docs/contributing.md docs/changelog.md docs/logo.svg docs/gifs.md docs/svgs.md docs/videos.md
+rm -rf docs/index.md docs/readme-header.png

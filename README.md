@@ -1,6 +1,4 @@
-# 🎥 scrcast
-
-## Your drop in screen recording solution on Android
+![scrcast](readme-header.png)
 
 A fully, featured replacement for screen recording needs backed by Kotlin with the power of Coroutines and Android Jetpack. scrcast is:
 
