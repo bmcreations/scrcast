@@ -10,6 +10,7 @@ import android.os.Build
 import android.os.Environment
 import android.os.Parcelable
 import android.util.DisplayMetrics
+import android.util.Log
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.parcel.RawValue
 import kotlin.jvm.functions.FunctionN
@@ -174,7 +175,21 @@ data class StorageConfig @JvmOverloads constructor(
      * @see [directoryName]
      */
     @IgnoredOnParcel
-    val mediaStorageLocation = File(directory, directoryName)
+    val mediaStorageLocation: File?
+    get() {
+        val location = File(directory, directoryName)
+        return with(location) {
+            apply {
+                if (!exists()) {
+                    if (!mkdirs()) {
+                        Log.d("scrcast", "failed to create designated output directory")
+                        return@with null
+                    }
+                }
+                return this
+            }
+        }
+    }
 }
 
 /**

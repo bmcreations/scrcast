@@ -133,20 +133,7 @@ class ScrCast private constructor(private val activity: Activity) {
         }
     }
 
-    private val outputDirectory: File?
-        get() {
-            val mediaStorageDir = options.storage.mediaStorageLocation
-            mediaStorageDir.apply {
-                if (!exists()) {
-                    if (!mkdirs()) {
-                        Log.d("scrcast", "failed to create designated output directory")
-                        return null
-                    }
-                }
-            }
-
-            return mediaStorageDir
-        }
+    private val outputDirectory: File? = options.storage.mediaStorageLocation
 
     private var _outputFile: File? = null
     private val outputFile: File?
