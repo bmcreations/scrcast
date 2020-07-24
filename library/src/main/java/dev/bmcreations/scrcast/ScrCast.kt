@@ -100,6 +100,15 @@ class ScrCast private constructor(private val activity: Activity) {
 
     private val dpi by lazy { metrics.density }
 
+    /**
+     * Current [Options] for this instance.
+     *
+     * Available for client read/write persistence for user defaults.
+     *
+     * @see [options]
+     * @see [updateOptions]
+     * @see [Options]
+     */
     var options = Options()
         private set
 
