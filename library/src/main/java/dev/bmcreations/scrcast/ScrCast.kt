@@ -100,7 +100,8 @@ class ScrCast private constructor(private val activity: Activity) {
 
     private val dpi by lazy { metrics.density }
 
-    private var options = Options()
+    var options = Options()
+        private set
 
     private var serviceBinder: RecorderService? = null
 
