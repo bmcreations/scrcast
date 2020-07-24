@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Clean any previous Dokka docs.
-rm -rf docs/api
+# Deploy updated docs
+sh deploy-docs.sh
 
-# Build the new Dokka docs.
-./gradlew clean uploadArchives --no-daemon --no-parallel
+# Upload release to maven
+./gradlew uploadArchives --no-daemon --no-parallel

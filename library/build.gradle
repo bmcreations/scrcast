@@ -1,7 +1,6 @@
 apply from: "$rootProject.projectDir/android-library.gradle"
 
 apply plugin: "org.jetbrains.dokka"
-apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: "com.vanniktech.maven.publish"
 
 group='dev.bmcreations'
