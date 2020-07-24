@@ -12,6 +12,7 @@ buildscript {
         classpath deps.plugins.kotlin
         classpath deps.plugins.versions
         classpath deps.plugins.maven_gradle
+        classpath deps.plugins.maven_publish
         classpath deps.plugins.dokka
     }
 }

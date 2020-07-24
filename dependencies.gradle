@@ -55,6 +55,7 @@ ext.versions = versions
 def plugins = [:]
 plugins.android_build_tools = "com.android.tools.build:gradle:$versions.plugin_build_tools"
 plugins.maven_gradle = "com.github.dcendents:android-maven-gradle-plugin:$versions.plugin_android_maven"  // for aars
+plugins.maven_publish = "com.vanniktech:gradle-maven-publish-plugin:0.11.1"
 plugins.google_services = "com.google.gms:google-services:$versions.plugin_google_services"
 plugins.firebase = "com.google.firebase:firebase-plugins:$versions.plugin_firebase"
 plugins.fabric = "io.fabric.tools:gradle:$versions.plugin_fabric"
