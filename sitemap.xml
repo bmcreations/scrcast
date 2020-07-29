@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url>
      <loc>https://bmcreations.dev/</loc>
-     <lastmod>2020-07-28</lastmod>
+     <lastmod>2020-07-29</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://bmcreations.dev/api/library/</loc>
-     <lastmod>2020-07-28</lastmod>
+     <lastmod>2020-07-29</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://bmcreations.dev/api/library/dev.bmcreations.scrcast.config/</loc>
-     <lastmod>2020-07-28</lastmod>
+     <lastmod>2020-07-29</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://bmcreations.dev/api/library/dev.bmcreations.scrcast.recorder/</loc>
-     <lastmod>2020-07-28</lastmod>
+     <lastmod>2020-07-29</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://bmcreations.dev/api/library/dev.bmcreations.scrcast.recorder.notification/</loc>
-     <lastmod>2020-07-28</lastmod>
+     <lastmod>2020-07-29</lastmod>
      <changefreq>daily</changefreq>
     </url>
 </urlset>
