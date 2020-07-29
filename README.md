@@ -7,22 +7,9 @@ A fully, featured replacement for screen recording needs backed by Kotlin with t
 
 ## Download
 
-scrcast is available on `jitpack()`.
+scrcast is available on `mavenCentral()`.
 
-In your root `build.gradle`:
-```groovy
-allprojects {
-    repositories {
-        google()
-        jcenter()
-+        maven {
-+            url "https://jitpack.io"
-+        }
-    }
-}
-```
-
-`implementation ("dev.bmcreations:scrcast:0.1.0")`
+`implementation ("dev.bmcreations:scrcast:$scrcast_version")`
 
 ## Quick Start
 
