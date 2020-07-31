@@ -3,6 +3,7 @@
 package dev.bmcreations.scrcast.internal.config.dsl
 
 import android.graphics.Bitmap
+import androidx.annotation.ColorRes
 import androidx.annotation.RestrictTo
 import dev.bmcreations.scrcast.config.*
 import java.io.File
@@ -16,14 +17,17 @@ class OptionsBuilder {
     var startDelayMs: Long = 0
     var stopOnScreenOff: Boolean = false
 
+    @JvmSynthetic
     fun video(config: VideoConfigBuilder.() -> Unit) {
         video = VideoConfigBuilder().apply(config).build()
     }
 
+    @JvmSynthetic
     fun storage(config: StorageConfigBuilder.() -> Unit) {
         storage = StorageConfigBuilder().apply(config).build()
     }
 
+    @JvmSynthetic
     fun notification(config: NotificationConfigBuilder.() -> Unit) {
         notification = NotificationConfigBuilder()
             .apply(config).build()
@@ -81,8 +85,7 @@ class StorageConfigBuilder {
 
 
 class NotificationConfigBuilder {
-    private val defaultConfig =
-        NotificationConfig()
+    private val defaultConfig = NotificationConfig()
 
     var title: String = defaultConfig.title
     var description: String = defaultConfig.description
@@ -91,22 +94,31 @@ class NotificationConfigBuilder {
     var showStop: Boolean = defaultConfig.showStop
     var showPause: Boolean = defaultConfig.showPause
     var showTimer: Boolean = defaultConfig.showTimer
-    private var channel: ChannelConfig =
-        ChannelConfig()
+    var useMediaStyle: Boolean = defaultConfig.useMediaStyle
 
+    @ColorRes
+    var accentColor: Int = defaultConfig.accentColor
+    var colorAsBackground: Boolean = defaultConfig.colorAsBackground
+
+    var channel: ChannelConfig = ChannelConfig()
+
+    @JvmSynthetic
     fun channel(config: ChannelConfigBuilder.() -> Unit) {
         channel = ChannelConfigBuilder().apply(config).build()
     }
 
     fun build() = NotificationConfig(
-        title,
-        description,
-        icon,
-        id,
-        showStop,
-        showPause,
-        showTimer,
-        channel
+        title = title,
+        description = description,
+        icon = icon,
+        id = id,
+        showStop = showStop,
+        showPause = showPause,
+        showTimer = showTimer,
+        useMediaStyle = useMediaStyle,
+        accentColor = accentColor,
+        colorAsBackground = colorAsBackground,
+        channel = channel
     )
 }
 

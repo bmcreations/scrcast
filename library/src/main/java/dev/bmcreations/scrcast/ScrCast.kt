@@ -86,7 +86,7 @@ class ScrCast private constructor(private val activity: Activity) {
     private val defaultNotificationProvider by lazy {
         RecorderNotificationProvider(
             activity,
-            options
+            options.notification
         )
     }
     private var notificationProvider: NotificationProvider? = null
