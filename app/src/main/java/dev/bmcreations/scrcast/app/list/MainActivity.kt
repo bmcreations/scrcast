@@ -27,8 +27,6 @@ class MainActivity : AppCompatActivity() {
                     directoryName = "scrcast-sample"
                 }
                 notification {
-                    title = "Super cool library"
-                    description = "shh session in progress"
                     icon = resources.getDrawable(R.drawable.ic_camcorder, null).toBitmap()
                     channel {
                         id = "1337"

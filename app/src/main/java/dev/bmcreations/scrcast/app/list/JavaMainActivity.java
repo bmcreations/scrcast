@@ -27,6 +27,7 @@ import dev.bmcreations.scrcast.config.NotificationConfig;
 import dev.bmcreations.scrcast.config.Options;
 import dev.bmcreations.scrcast.config.StorageConfig;
 import dev.bmcreations.scrcast.config.VideoConfig;
+import dev.bmcreations.scrcast.internal.config.dsl.NotificationConfigBuilder;
 import dev.bmcreations.scrcast.recorder.RecordingCallbacks;
 import dev.bmcreations.scrcast.recorder.RecordingState;
 
@@ -68,21 +69,17 @@ public class JavaMainActivity extends AppCompatActivity {
 
         // create configuration for our notification
         Drawable icon = ContextCompat.getDrawable(this, R.drawable.ic_camcorder);
-        NotificationConfig notificationConfig = new NotificationConfig(
-                "super cool library",
-                "shh session in progress",
-                drawableToBitmap(icon),
-                101,
-                true,
-                true,
-                true,
-                channelConfig
-        );
+        NotificationConfigBuilder  notificationConfig = new NotificationConfigBuilder();
+        notificationConfig.setShowPause(true);
+        notificationConfig.setIcon(drawableToBitmap(icon));
+        notificationConfig.setShowStop(true);
+        notificationConfig.setShowTimer(true);
+        notificationConfig.setChannel(channelConfig);
 
         Options options = new Options(
                 videoConfig,
                 storageConfig,
-                notificationConfig,
+                notificationConfig.build(),
                 false,
                 5000,
                 true

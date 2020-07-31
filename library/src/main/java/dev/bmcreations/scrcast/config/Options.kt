@@ -11,6 +11,9 @@ import android.os.Environment
 import android.os.Parcelable
 import android.util.DisplayMetrics
 import android.util.Log
+import androidx.annotation.ColorInt
+import androidx.annotation.ColorRes
+import dev.bmcreations.scrcast.R
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.parcel.RawValue
 import kotlin.jvm.functions.FunctionN
@@ -203,13 +206,13 @@ data class NotificationConfig @JvmOverloads constructor(
      *
      * @see [Notification.Builder.setContentTitle]
      */
-    val title: String = "scrcast",
+    val title: String = "Recording screen",
     /**
      * The message/description displayed in the notification
      *
      * @see [Notification.Builder.setContentText]
      */
-    val description: String = "Recording in progress...",
+    val description: String = "",
     /**
      * The icon displayed in the notification
      *
@@ -240,6 +243,26 @@ data class NotificationConfig @JvmOverloads constructor(
      * @see [Notification.Builder.setUsesChronometer]
      */
     val showTimer: Boolean = false,
+    /**
+     * Whether to have pause/resume and stop actions show as media style icons
+     *
+     */
+    val useMediaStyle: Boolean = false,
+    /**
+     * The accent color resource for the notification
+     *
+     * NOTE: On [Build.VERSION_CODES.M] and below, this will set the background color of the notification
+     * and on [Build.VERSION_CODES.N] and above, will result as the accent color unless [colorAsBackground] is enabled.
+     *
+     * Defaults to [Color.RED]
+     */
+    @ColorRes
+    val accentColor: Int = R.color.recorder_notification_background,
+    /**
+     * When enabled the notification will use [accentColor] as the background.
+     *
+     */
+    val colorAsBackground: Boolean = true,
     /** @see [ChannelConfig] */
     val channel: ChannelConfig = ChannelConfig()
 ): Parcelable
