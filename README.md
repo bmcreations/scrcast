@@ -1,5 +1,7 @@
 ![scrcast](readme-header.png)
 
+![Android CI](https://github.com/bmcreations/scrcast/workflows/Android%20CI/badge.svg)
+
 A fully, featured replacement for screen recording needs backed by Kotlin with the power of Coroutines and Android Jetpack. scrcast is:
 
 * <b>Easy to use</b>: scrcast's API leverages Kotlin languages features for simplicity, ease of use, and little-to-no boilerplate. Simply configure and `record()`
