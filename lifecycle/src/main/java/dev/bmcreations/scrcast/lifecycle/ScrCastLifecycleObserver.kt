@@ -63,7 +63,7 @@ private class LiveEvent constructor(
  * Lifecycle observer for [RecordingState] using AndroidX lifecycle components
  * @see [LifecycleObserver]
  */
-fun ScrCast.observe(lifecycleOwner: LifecycleOwner, observer: Observer<RecordingState>) {
+fun ScrCast.observeRecordingState(lifecycleOwner: LifecycleOwner, observer: Observer<RecordingState>) {
     LiveEvent(this, lifecycleOwner, Observer { observer.onChanged(it) })
 }
 
@@ -75,8 +75,8 @@ class ScrCastLifecycleObserver  {
          * @see [LifecycleObserver]
          */
         @JvmStatic
-        fun observe(recorder: ScrCast, lifecycleOwner: LifecycleOwner, observer: Observer<RecordingState>) {
-            recorder.observe(lifecycleOwner, observer)
+        fun observeRecordingState(recorder: ScrCast, lifecycleOwner: LifecycleOwner, observer: Observer<RecordingState>) {
+            recorder.observeRecordingState(lifecycleOwner, observer)
         }
     }
 }

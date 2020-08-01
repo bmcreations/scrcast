@@ -7,12 +7,10 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.view.isVisible
-import androidx.lifecycle.Observer
 import com.google.android.material.snackbar.Snackbar
 import dev.bmcreations.scrcast.ScrCast
 import dev.bmcreations.scrcast.app.R
 import dev.bmcreations.scrcast.extensions.supportsPauseResume
-import dev.bmcreations.scrcast.lifecycle.observe
 import dev.bmcreations.scrcast.recorder.RecordingState
 import kotlinx.android.synthetic.main.activity_main.*
 
