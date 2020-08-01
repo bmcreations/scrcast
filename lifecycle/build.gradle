@@ -1,0 +1,30 @@
+apply from: "$rootProject.projectDir/android-library.gradle"
+
+apply plugin: "org.jetbrains.dokka"
+apply plugin: "com.vanniktech.maven.publish"
+
+//afterEvaluate {
+//    dokka {
+//        outputDirectory = "$rootDir/docs/api"
+//        outputFormat = "gfm"
+//        configuration {
+//            includeNonPublic = false
+//            reportUndocumented = true
+//            jdkVersion = 8
+//            skipDeprecated = true
+//            skipEmptyPackages = true
+//
+//            // suppress internal operations from logging to API docs
+//            perPackageOption {
+//                prefix = "dev.bmcreations.scrcast.internal"
+//                suppress = true
+//            }
+//        }
+//    }
+//}
+
+dependencies {
+    implementation(project(":library"))
+    implementation deps.jetpack.lifecycle_extensions
+    implementation deps.jetpack.lifecycle_livedata_ktx
+}
