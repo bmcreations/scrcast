@@ -3,15 +3,6 @@ apply from: "$rootProject.projectDir/android-library.gradle"
 apply plugin: "org.jetbrains.dokka"
 apply plugin: "com.vanniktech.maven.publish"
 
-group='dev.bmcreations'
-
-android {
-    defaultConfig {
-        versionCode 1
-        versionName "1.0"
-    }
-}
-
 afterEvaluate {
     dokka {
         outputDirectory = "$rootDir/docs/api"
