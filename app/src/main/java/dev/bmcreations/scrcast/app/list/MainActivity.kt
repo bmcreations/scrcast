@@ -7,17 +7,19 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.view.isVisible
+import androidx.lifecycle.Observer
 import com.google.android.material.snackbar.Snackbar
 import dev.bmcreations.scrcast.ScrCast
 import dev.bmcreations.scrcast.app.R
 import dev.bmcreations.scrcast.extensions.supportsPauseResume
+import dev.bmcreations.scrcast.lifecycle.observe
 import dev.bmcreations.scrcast.recorder.RecordingState
 import kotlinx.android.synthetic.main.activity_main.*
 
 
-class MainActivity : AppCompatActivity() {
+abstract class MainActivity : AppCompatActivity() {
 
-    private val recorder: ScrCast by lazy {
+    protected val recorder: ScrCast by lazy {
         ScrCast.use(this).apply {
             options {
                 video {
@@ -45,11 +47,6 @@ class MainActivity : AppCompatActivity() {
             // simply provide a NotificationProvider
             //
             //setNotificationProvider(SimpleNotificationProvider(this@MainActivity))
-
-            onRecordingStateChange { state -> handleRecorderState(state) }
-            onRecordingComplete { file ->
-                Snackbar.make(bottom_bar, "Recording located at ${file.absolutePath}", Snackbar.LENGTH_SHORT).show()
-            }
         }
     }
 
@@ -75,7 +72,19 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun handleRecorderState(state: RecordingState) {
+    override fun onResume() {
+        super.onResume()
+        recorder.onRecordingComplete { file ->
+            Snackbar.make(bottom_bar, "Recording located at ${file.absolutePath}", Snackbar.LENGTH_SHORT).show()
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        recorder.onRecordingComplete { }
+    }
+
+    protected fun handleRecorderState(state: RecordingState) {
         Log.d("sample", "state change: state = $state")
         fab.reflectState(state)
 

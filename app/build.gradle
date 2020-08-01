@@ -35,6 +35,7 @@ android {
 
 dependencies {
     implementation project(":library")
+    implementation project(":lifecycle")
 
     implementation deps.kotlin.stdlib
     implementation deps.jetpack.corektx

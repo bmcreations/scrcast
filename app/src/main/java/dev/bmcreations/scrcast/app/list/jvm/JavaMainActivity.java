@@ -1,4 +1,4 @@
-package dev.bmcreations.scrcast.app.list;
+package dev.bmcreations.scrcast.app.list.jvm;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -12,6 +12,7 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.Observer;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textview.MaterialTextView;
@@ -22,12 +23,13 @@ import java.io.File;
 
 import dev.bmcreations.scrcast.ScrCast;
 import dev.bmcreations.scrcast.app.R;
+import dev.bmcreations.scrcast.app.list.FABExtensions;
 import dev.bmcreations.scrcast.config.ChannelConfig;
-import dev.bmcreations.scrcast.config.NotificationConfig;
 import dev.bmcreations.scrcast.config.Options;
 import dev.bmcreations.scrcast.config.StorageConfig;
 import dev.bmcreations.scrcast.config.VideoConfig;
 import dev.bmcreations.scrcast.internal.config.dsl.NotificationConfigBuilder;
+import dev.bmcreations.scrcast.lifecycle.ScrCastLifecycleObserver;
 import dev.bmcreations.scrcast.recorder.RecordingCallbacks;
 import dev.bmcreations.scrcast.recorder.RecordingState;
 
