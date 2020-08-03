@@ -187,9 +187,9 @@ class ScrCast private constructor(private val activity: Activity) {
     /**
      * Set the recording callbacks, emitting changes of [RecordingState] as they occur and a link to the output [File]
      */
-    fun setRecordingCallback(listener : RecordingCallbacks) {
-        onStateChange = { listener.onStateChange(it) }
-        onRecordingOutput = { listener.onRecordingFinished(it) }
+    fun setRecordingCallback(listener : RecordingCallbacks?) {
+        onStateChange = { listener?.onStateChange(it) }
+        onRecordingOutput = { listener?.onRecordingFinished(it) }
     }
 
     /**

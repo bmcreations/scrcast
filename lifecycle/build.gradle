@@ -13,22 +13,12 @@ afterEvaluate {
             jdkVersion = 8
             skipDeprecated = true
             skipEmptyPackages = true
-
-            // suppress internal operations from logging to API docs
-            perPackageOption {
-                prefix = "dev.bmcreations.scrcast.internal"
-                suppress = true
-            }
         }
     }
 }
 
 dependencies {
-    implementation deps.activity_results_dispatcher
-    implementation deps.dexter
-    implementation deps.jetpack.appcompat
-    implementation deps.jetpack.localbroadcast
-
-    implementation deps.kotlin.coroutinesCore
-    implementation deps.kotlin.coroutinesAndroid
+    implementation(project(":library"))
+    implementation deps.jetpack.lifecycle_extensions
+    implementation deps.jetpack.lifecycle_livedata_ktx
 }
