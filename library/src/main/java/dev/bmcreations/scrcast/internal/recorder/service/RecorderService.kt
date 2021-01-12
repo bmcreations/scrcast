@@ -26,6 +26,7 @@ import dev.bmcreations.scrcast.recorder.notification.NotificationProvider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.io.File
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 class RecorderService : Service() {
@@ -65,16 +66,16 @@ class RecorderService : Service() {
     }
 
     private var state: RecordingState = RecordingState.Idle()
-    set(value) {
-        field = value
-        broadcaster.sendBroadcast(Intent(value.stateString()).apply {
-            if (value is RecordingState.Delay) {
-                putExtra(EXTRA_DELAY_REMAINING, value.remainingSeconds)
-            } else if (value is RecordingState.Idle) {
-                putExtra(EXTRA_ERROR, value.error)
-            }
-        })
-    }
+        set(value) {
+            field = value
+            broadcaster.sendBroadcast(Intent(value.stateString()).apply {
+                if (value is RecordingState.Delay) {
+                    putExtra(EXTRA_DELAY_REMAINING, value.remainingSeconds)
+                } else if (value is RecordingState.Idle) {
+                    putExtra(EXTRA_ERROR, value.error)
+                }
+            })
+        }
 
     private var options: Options = Options()
     private lateinit var outputFile: String
@@ -111,7 +112,7 @@ class RecorderService : Service() {
     private var mediaRecorder: MediaRecorder? = null
 
     private fun createRecorder() {
-        mediaRecorder?.reset()
+        Log.d("scrcast", "createRecorder()")
         mediaRecorder = MediaRecorder().apply {
             setVideoSource(VideoSource.SURFACE)
             setOutputFormat(options.storage.outputFormat)
@@ -133,12 +134,21 @@ class RecorderService : Service() {
             setOnInfoListener { _, what, _ ->
                 when (what) {
                     MEDIA_RECORDER_INFO_MAX_DURATION_REACHED -> {
-                        Log.d("scrcast", "max duration of ${options.video.maxLengthSecs} seconds reached. Stopping reconrding...")
+                        Log.d(
+                            "scrcast",
+                            "max duration of ${options.video.maxLengthSecs} seconds reached. Stopping reconrding..."
+                        )
                         stopRecording()
                     }
-                    MEDIA_RECORDER_INFO_MAX_FILESIZE_APPROACHING -> Log.d("scrcast", "Approaching max file size of ${options.storage.maxSizeMB}MB")
+                    MEDIA_RECORDER_INFO_MAX_FILESIZE_APPROACHING -> Log.d(
+                        "scrcast",
+                        "Approaching max file size of ${options.storage.maxSizeMB}MB"
+                    )
                     MEDIA_RECORDER_INFO_MAX_FILESIZE_REACHED -> {
-                        Log.d("scrcast", "max file size of ${options.storage.maxSizeMB}MB reached. Stopping reconrding...")
+                        Log.d(
+                            "scrcast",
+                            "max file size of ${options.storage.maxSizeMB}MB reached. Stopping reconrding..."
+                        )
                         stopRecording()
                     }
 
@@ -194,7 +204,10 @@ class RecorderService : Service() {
 
     private fun recordInternal(code: Int, data: Intent) {
         GlobalScope.launch(Dispatchers.Main) {
-            startForeground(notificationProvider.getNotificationId(), notificationProvider.get(state))
+            startForeground(
+                notificationProvider.getNotificationId(),
+                notificationProvider.get(state)
+            )
             mediaProjection = projectionManager.getMediaProjection(code, data)
 
             if (options.stopOnScreenOff) {
@@ -224,26 +237,29 @@ class RecorderService : Service() {
     }
 
     private fun stopRecording(error: Throwable? = null) {
-        if (_virtualDisplay == null) {
-            return
-        }
-        _virtualDisplay?.release()
-        destroyMediaProjection()
+        mediaProjection?.stop()
+
         state = RecordingState.Idle(error)
         stopForeground(true)
     }
 
-    private fun destroyMediaProjection() {
+    private fun cleanupProjection() {
         mediaProjection?.unregisterCallback(mediaProjectionCallback)
-        mediaProjection?.stop()
         mediaProjection = null
+
+        _virtualDisplay?.release()
+
+        runCatching {
+            mediaRecorder?.stop()
+            mediaRecorder?.reset()
+            mediaRecorder?.release()
+        }
     }
 
     private inner class MediaProjectionCallback : MediaProjection.Callback() {
         override fun onStop() {
-            mediaRecorder?.stop()
-            mediaRecorder?.reset()
-            stopRecording()
+            Log.d("scrcast", "projection on stop")
+            cleanupProjection()
         }
     }
 
@@ -264,13 +280,15 @@ class RecorderService : Service() {
     }
 
     override fun onDestroy() {
+        Log.d("scrcast", "onDestroy: service")
         stopRecording()
         if (options.stopOnScreenOff) {
             unregisterReceiver(screenHandler)
         }
         try {
             broadcaster.unregisterReceiver(pauseResumeHandler)
-        } catch (swallow: Exception) {}
+        } catch (swallow: Exception) {
+        }
 
         super.onDestroy()
     }

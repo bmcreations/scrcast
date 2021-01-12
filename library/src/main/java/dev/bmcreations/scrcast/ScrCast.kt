@@ -11,6 +11,9 @@ import android.os.Build
 import android.os.IBinder
 import android.util.DisplayMetrics
 import android.util.Log
+import androidx.activity.ComponentActivity
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.launch
 import androidx.core.app.ActivityCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.karumi.dexter.Dexter
@@ -20,7 +23,6 @@ import com.karumi.dexter.listener.PermissionRequest
 import com.karumi.dexter.listener.multi.CompositeMultiplePermissionsListener
 import com.karumi.dexter.listener.multi.DialogOnAnyDeniedMultiplePermissionsListener
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
-import dev.bmcreations.dispatcher.ActivityResult
 import dev.bmcreations.scrcast.config.Options
 import dev.bmcreations.scrcast.internal.config.dsl.OptionsBuilder
 import dev.bmcreations.scrcast.extensions.supportsPauseResume
@@ -31,14 +33,13 @@ import dev.bmcreations.scrcast.recorder.RecordingStateChangeCallback
 import dev.bmcreations.scrcast.recorder.notification.NotificationProvider
 import dev.bmcreations.scrcast.internal.recorder.notification.RecorderNotificationProvider
 import dev.bmcreations.scrcast.internal.recorder.service.RecorderService
-import dev.bmcreations.scrcast.internal.request.MediaProjectionRequest
-import dev.bmcreations.scrcast.internal.request.MediaProjectionResult
+import dev.bmcreations.scrcast.internal.request.RecordScreen
 import java.io.File
 
 /**
  * Main Interface for accessing [ScrCast] Library
  */
-class ScrCast private constructor(private val activity: Activity) {
+class ScrCast private constructor(private val activity: ComponentActivity) {
 
     /**
      * The current [RecordingState] of the recorder
@@ -56,6 +57,7 @@ class ScrCast private constructor(private val activity: Activity) {
                 } catch (swallow: Exception) { }
 
                 activity.unbindService(connection)
+                activity.stopService(recordingSession)
                 scanForOutputFile()
             }
         }
@@ -74,6 +76,8 @@ class ScrCast private constructor(private val activity: Activity) {
             serviceBinder = null
         }
     }
+
+    private var recordingSession: Intent? = null
 
     private val dialogPermissionListener: DialogOnAnyDeniedMultiplePermissionsListener = DialogOnAnyDeniedMultiplePermissionsListener.Builder
         .withContext(activity)
@@ -146,11 +150,6 @@ class ScrCast private constructor(private val activity: Activity) {
             return _outputFile
         }
 
-
-    private val projectionManager: MediaProjectionManager by lazy {
-        activity.getSystemService(MediaProjectionManager::class.java)
-    }
-
     private val permissionListener = object : MultiplePermissionsListener {
         override fun onPermissionsChecked(p0: MultiplePermissionsReport?) {
             startRecording()
@@ -161,6 +160,16 @@ class ScrCast private constructor(private val activity: Activity) {
             p1: PermissionToken?
         ) {
             p1?.continuePermissionRequest()
+        }
+    }
+
+    private val startRecording = activity.registerForActivityResult(RecordScreen()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            if (options.moveTaskToBack) activity.moveTaskToBack(true)
+            val output = outputFile
+            if (output != null) {
+                startService(result, output)
+            }
         }
     }
 
@@ -325,27 +334,11 @@ class ScrCast private constructor(private val activity: Activity) {
     }
 
     private fun startRecording() {
-        MediaProjectionRequest(
-            activity,
-            projectionManager
-        ).start(object : MediaProjectionResult {
-            override fun onCancel() = Unit
-            override fun onFailure(error: Throwable) = Unit
-
-            override fun onSuccess(result: ActivityResult?) {
-                if (result != null) {
-                    if (options.moveTaskToBack) activity.moveTaskToBack(true)
-                    val output = outputFile
-                    if (output != null) {
-                        startService(result, output)
-                    }
-                }
-            }
-        })
+        startRecording.launch()
     }
 
     private fun startService(result: ActivityResult, file : File) {
-        val service = Intent(activity, RecorderService::class.java).apply {
+        recordingSession = Intent(activity, RecorderService::class.java).apply {
             putExtra("code", result.resultCode)
             putExtra("data", result.data)
             putExtra("options", options)
@@ -364,8 +357,8 @@ class ScrCast private constructor(private val activity: Activity) {
             }
         )
 
-        activity.bindService(service, connection, Context.BIND_AUTO_CREATE)
-        activity.startService(service)
+        activity.bindService(recordingSession, connection, Context.BIND_AUTO_CREATE)
+        activity.startService(recordingSession)
     }
 
     companion object {
@@ -378,7 +371,7 @@ class ScrCast private constructor(private val activity: Activity) {
          * @see [Options.video]
          */
         @JvmStatic
-        fun use(activity: Activity): ScrCast {
+        fun use(activity: ComponentActivity): ScrCast {
             return ScrCast(activity)
         }
     }
