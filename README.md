@@ -1,6 +1,7 @@
 ![scrcast](readme-header.png)
 
 ![Android CI](https://github.com/bmcreations/scrcast/workflows/Android%20CI/badge.svg)
+![Latest Release](https://img.shields.io/github/v/release/bmcreations/scrcast)
 
 A fully, featured replacement for screen recording needs backed by Kotlin with the power of Coroutines and Android Jetpack. scrcast is:
 
@@ -11,7 +12,7 @@ A fully, featured replacement for screen recording needs backed by Kotlin with t
 
 scrcast is available on `mavenCentral()`.
 
-`implementation ("dev.bmcreations:scrcast:$scrcast_version")`
+`implementation ("dev.bmcreations:scrcast:$version")`
 
 ## Quick Start
 
