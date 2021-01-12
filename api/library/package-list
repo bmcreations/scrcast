@@ -1,8 +1,0 @@
-$dokka.format:gfm
-$dokka.linkExtension:md
-
-dev.bmcreations.scrcast
-dev.bmcreations.scrcast.config
-dev.bmcreations.scrcast.extensions
-dev.bmcreations.scrcast.recorder
-dev.bmcreations.scrcast.recorder.notification

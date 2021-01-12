@@ -3,21 +3,5 @@
      <loc>https://bmcreations.dev/</loc>
      <lastmod>2021-01-12</lastmod>
      <changefreq>daily</changefreq>
-    </url><url>
-     <loc>https://bmcreations.dev/api/library/</loc>
-     <lastmod>2021-01-12</lastmod>
-     <changefreq>daily</changefreq>
-    </url><url>
-     <loc>https://bmcreations.dev/api/library/dev.bmcreations.scrcast.config/</loc>
-     <lastmod>2021-01-12</lastmod>
-     <changefreq>daily</changefreq>
-    </url><url>
-     <loc>https://bmcreations.dev/api/library/dev.bmcreations.scrcast.recorder/</loc>
-     <lastmod>2021-01-12</lastmod>
-     <changefreq>daily</changefreq>
-    </url><url>
-     <loc>https://bmcreations.dev/api/library/dev.bmcreations.scrcast.recorder.notification/</loc>
-     <lastmod>2021-01-12</lastmod>
-     <changefreq>daily</changefreq>
     </url>
 </urlset>
