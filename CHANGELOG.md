@@ -1,8 +1,16 @@
-##  (2020-07-24)
+#  0.3.0 (2021-01-12)
 
+* **actions:** add dokka trigger for releases ([0072e4f](https://github.com/bmcreations/scrcast/commit/0072e4f5fa6315d181e056f88033963b3a166ac5))
+* **readme:** add github action CI badge ([07d9e23](https://github.com/bmcreations/scrcast/commit/07d9e23031b7f50c590c845083b81b590dd4c2fd))
 * chore: update mavan publish dependency; begin setup for action deploy ([526af18](https://github.com/bmcreations/scrcast/commit/526af18))
 
+### Bug Fixes
 
+* **scrcast:** fix media playback after recording; replace dispatcher with Activity Results API ([97788e9](https://github.com/bmcreations/scrcast/commit/97788e999c9816bf4000c4ddce564f373d176155)), closes [#46](https://github.com/bmcreations/scrcast/issues/46) [#48](https://github.com/bmcreations/scrcast/issues/48)
+
+### Features
+
+* **notifications:** Update default notification user experience ([#41](https://github.com/bmcreations/scrcast/issues/41)) ([15cc998](https://github.com/bmcreations/scrcast/commit/15cc998277a05670e63a8bfdb58c8690332e5206)), closes [#40](https://github.com/bmcreations/scrcast/issues/40)
 
 ## 0.2.0 (2020-07-24)
 
