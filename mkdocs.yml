@@ -26,11 +26,10 @@ theme:
 # Navigation
 nav:
   - 'Overview': index.md
+  - 'Lifecycle': lifecycle.md
   - 'API':
       - 'scrcast': api/library/index.md
-      - 'config': api/library/dev.bmcreations.scrcast.config/index.md
-      - 'recorder': api/library/dev.bmcreations.scrcast.recorder/index.md
-      - 'notifications': api/library/dev.bmcreations.scrcast.recorder.notification/index.md
+      - 'scrcast-lifecycle': api/lifecycle/index.md
 
 # CSS
 extra_css:
