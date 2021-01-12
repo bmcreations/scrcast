@@ -24,9 +24,10 @@ afterEvaluate {
 }
 
 dependencies {
-    implementation deps.activity_results_dispatcher
     implementation deps.dexter
+    implementation deps.jetpack.activity
     implementation deps.jetpack.appcompat
+    implementation deps.jetpack.fragment
     implementation deps.jetpack.localbroadcast
 
     implementation deps.kotlin.coroutinesCore

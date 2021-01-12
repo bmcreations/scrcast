@@ -12,13 +12,13 @@ ext.deps = [:]
 def deps = [:]
 
 def versions = [:]
-versions.plugin_build_tools = '4.2.0-alpha02'
-versions.kotlin = '1.4.0-rc'
-versions.kotlinx_coroutines = '1.3.6'
+versions.plugin_build_tools = '4.1.1'
+versions.kotlin = '1.4.21'
+versions.kotlinx_coroutines = '1.4.1'
 versions.plugin_androidx_navigation_safe_args = '2.2.0-rc03'
 versions.plugin_dokka = '0.10.1'
 
-versions.android_ktx = '1.3.0-beta01'
+versions.android_ktx = '1.3.2'
 versions.androidx_lifecycle = '2.2.0'
 ext.versions = versions
 
@@ -35,10 +35,12 @@ plugins.dokka = "org.jetbrains.dokka:dokka-gradle-plugin:$versions.plugin_dokka"
 deps.plugins = plugins
 
 def jetpack = [:]
-jetpack.appcompat = "androidx.appcompat:appcompat:1.2.0-alpha01"
+jetpack.activity = "androidx.activity:activity-ktx:1.2.0-rc01"
+jetpack.appcompat = "androidx.appcompat:appcompat:1.2.0"
 jetpack.corektx = "androidx.core:core-ktx:$versions.android_ktx"
 jetpack.constraintlayout = "androidx.constraintlayout:constraintlayout:2.0.0-beta3"
-jetpack.material = "com.google.android.material:material:1.1.0-beta02"
+jetpack.fragment = "androidx.fragment:fragment-ktx:1.3.0-rc01"
+jetpack.material = "com.google.android.material:material:1.2.0"
 jetpack.lifecycle_extensions = "androidx.lifecycle:lifecycle-extensions:$versions.androidx_lifecycle"
 jetpack.localbroadcast = "androidx.localbroadcastmanager:localbroadcastmanager:1.0.0"
 jetpack.lifecycle_viewmodel_ktx = "androidx.lifecycle:lifecycle-viewmodel-ktx:$versions.androidx_lifecycle"
@@ -52,7 +54,6 @@ kotlin.coroutinesAndroid = "org.jetbrains.kotlinx:kotlinx-coroutines-android:$ve
 kotlin.reflect = "org.jetbrains.kotlin:kotlin-reflect:$versions.kotlin"
 deps.kotlin = kotlin
 
-deps.activity_results_dispatcher = "com.github.bmc08gt:activity-results-dispatcher:master-SNAPSHOT"
-deps.dexter = "com.karumi:dexter:6.1.0"
+deps.dexter = "com.karumi:dexter:6.2.2"
 
 ext.deps = deps
