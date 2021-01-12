@@ -11,7 +11,7 @@ sed -e '/full configuration details and documentation here/ { N; d; }' < README.
 cp readme-header.png docs/
 
 # Deploy to Github pages.
-mkdocs gh-deploy
+python3 -m mkdocs gh-deploy --force --verbose
 
 # Clean up.
 rm -rf docs/index.md docs/readme-header.png
