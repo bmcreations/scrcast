@@ -1,4 +1,0 @@
-$dokka.format:gfm
-$dokka.linkExtension:md
-$dokka.location:dev.bmcreations.scrcast.lifecycle$observeRecordingState(dev.bmcreations.scrcast.ScrCast, androidx.lifecycle.LifecycleOwner, androidx.lifecycle.Observer((dev.bmcreations.scrcast.recorder.RecordingState)))dev.bmcreations.scrcast.lifecycle/dev.bmcreations.scrcast.-scr-cast/observe-recording-state.md
-dev.bmcreations.scrcast.lifecycle
