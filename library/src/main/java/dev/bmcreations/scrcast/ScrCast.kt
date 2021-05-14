@@ -137,7 +137,8 @@ class ScrCast private constructor(private val activity: ComponentActivity) {
         }
     }
 
-    private val outputDirectory: File? = options.storage.mediaStorageLocation
+    private val outputDirectory: File?
+        get() = options.storage.mediaStorageLocation
 
     private var _outputFile: File? = null
     private val outputFile: File?
