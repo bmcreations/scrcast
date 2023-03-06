@@ -138,7 +138,7 @@ class RecorderNotificationProvider(
 
                 val actionPendingIntent: PendingIntent =
                     PendingIntent.getBroadcast(
-                        context, requestId, actionIntent, PendingIntent.FLAG_ONE_SHOT
+                        context, requestId, actionIntent, PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
                     )
 
                 addAction(
@@ -162,7 +162,7 @@ class RecorderNotificationProvider(
             }
             val stopPendingIntent: PendingIntent =
                 PendingIntent.getBroadcast(
-                    context, requestId, stopIntent, PendingIntent.FLAG_ONE_SHOT
+                    context, requestId, stopIntent, PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
                 )
 
             addAction(
