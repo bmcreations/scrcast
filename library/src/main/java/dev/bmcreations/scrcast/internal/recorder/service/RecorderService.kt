@@ -114,8 +114,10 @@ class RecorderService : Service() {
     private fun createRecorder() {
         Log.d("scrcast", "createRecorder()")
         mediaRecorder = MediaRecorder().apply {
+            setAudioSource(AudioSource.MIC)
             setVideoSource(VideoSource.SURFACE)
             setOutputFormat(options.storage.outputFormat)
+            setAudioEncoder(AudioEncoder.HE_AAC)
             setOutputFile(outputFile)
             with(options.video) {
                 setVideoSize(width, height)

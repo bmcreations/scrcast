@@ -258,7 +258,8 @@ class ScrCast private constructor(private val activity: ComponentActivity) {
         when (state) {
             is Idle -> {
                 Dexter.withContext(activity)
-                    .withPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE)
+                    .withPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE,
+                        Manifest.permission.RECORD_AUDIO)
                     .withListener(CompositeMultiplePermissionsListener(permissionListener, dialogPermissionListener))
                     .check()
             }
